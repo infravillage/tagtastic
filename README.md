@@ -46,7 +46,13 @@ landmarks
 
 $ tagtastic validate "Almond" --theme crayola_colors
 Found in theme 'crayola_colors'
+
+$ tagtastic generate --theme birds --seed 2 --format shell
+RELEASE_CODENAME=blue-heron
 ```
+
+Note: shell/CI output uses the first alias for a codename (slug style), so
+multi-word names become dash-separated when using the `shell` format.
 
 ---
 
@@ -101,6 +107,7 @@ Data and tooling:
 - Update `VERSION` if used for local builds.
 - Tag the release with SemVer (`vX.Y.Z[-alpha.N]`) and push the tag.
 - Ensure GitHub Actions runs GoReleaser and publishes the release.
+- Use GoReleaser for all release binaries (no manual packaging).
 
 ---
 

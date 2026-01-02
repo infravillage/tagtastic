@@ -1,3 +1,8 @@
+// Copyright (c) 2026 InfraVillage
+// SPDX-License-Identifier: MIT
+//
+// This file is part of TAGtastic and is licensed under the MIT License.
+
 package output
 
 import (
@@ -46,7 +51,7 @@ func TestShellFormatter(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if payload != "RELEASE_CODENAME=\"Almond\"" {
+	if payload != "RELEASE_CODENAME=almond" {
 		t.Fatalf("unexpected shell payload: %q", payload)
 	}
 }
@@ -54,6 +59,19 @@ func TestShellFormatter(t *testing.T) {
 func TestNewFormatter_Unknown(t *testing.T) {
 	if _, err := NewFormatter("nope"); err == nil {
 		t.Fatalf("expected error for unknown format")
+	}
+}
+
+func TestShellFormatter_FallbackToSlug(t *testing.T) {
+	formatter := ShellFormatter{}
+	item := data.CodeName{Name: "Blue Heron"}
+
+	payload, err := formatter.FormatName(item)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if payload != "RELEASE_CODENAME=blue-heron" {
+		t.Fatalf("unexpected shell payload: %q", payload)
 	}
 }
 

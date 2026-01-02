@@ -1,6 +1,14 @@
+// Copyright (c) 2026 InfraVillage
+// SPDX-License-Identifier: MIT
+//
+// This file is part of TAGtastic and is licensed under the MIT License.
+
 package data
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestEmbeddedThemeRepository_LoadsThemes(t *testing.T) {
 	repo, err := NewEmbeddedThemeRepository()
@@ -85,6 +93,29 @@ func TestFilterItems_ExcludeAlias(t *testing.T) {
 	for _, item := range filtered {
 		if normalizeName(item.Name) == "blue-heron" {
 			t.Fatalf("expected alias exclusion to remove Blue Heron")
+		}
+	}
+}
+
+func TestThemesHaveAliases(t *testing.T) {
+	repo, err := NewEmbeddedThemeRepository()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	names := repo.GetAllThemeNames()
+	for _, name := range names {
+		theme, err := repo.GetThemeByName(name)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		for _, item := range theme.Items {
+			if len(item.Aliases) == 0 {
+				t.Fatalf("expected aliases for %s in theme %s", item.Name, name)
+			}
+			if strings.TrimSpace(item.Aliases[0]) == "" {
+				t.Fatalf("expected non-empty alias for %s in theme %s", item.Name, name)
+			}
 		}
 	}
 }
