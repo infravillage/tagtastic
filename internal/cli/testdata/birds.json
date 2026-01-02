@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Albatross",
+    "aliases": [
+      "albatross"
+    ],
+    "description": "Large ocean bird"
+  },
+  {
+    "name": "Blue Heron",
+    "aliases": [
+      "blue-heron",
+      "heron"
+    ],
+    "description": "Wading bird"
+  },
+  {
+    "name": "Crane",
+    "aliases": [
+      "crane"
+    ],
+    "description": "Tall wading bird"
+  },
+  {
+    "name": "Dove",
+    "aliases": [
+      "dove"
+    ],
+    "description": "Symbol of peace"
+  },
+  {
+    "name": "Eagle",
+    "aliases": [
+      "eagle"
+    ],
+    "description": "Powerful raptor"
+  }
+]

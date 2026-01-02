@@ -43,7 +43,7 @@ func NewCLI(deps Dependencies) *CLI {
 		deps.FormatterFactory = output.NewFormatter
 	}
 
-	return &CLI{
+	app := &CLI{
 		Generate: GenerateCmd{deps: deps},
 		List:     ListCmd{deps: deps},
 		Themes:   ThemesCmd{deps: deps},
@@ -51,6 +51,12 @@ func NewCLI(deps Dependencies) *CLI {
 		Config:   ConfigCmd{deps: deps},
 		Version:  VersionCmd{deps: deps},
 	}
+
+	app.Config.Init.deps = deps
+	app.Config.Show.deps = deps
+	app.Config.Reset.deps = deps
+
+	return app
 }
 
 type GenerateCmd struct {
@@ -184,10 +190,6 @@ type ConfigCmd struct {
 	Show  ConfigShowCmd  `cmd:"" help:"Show local config"`
 	Reset ConfigResetCmd `cmd:"" help:"Remove local config"`
 	deps  Dependencies
-}
-
-func (cmd ConfigCmd) Run() error {
-	return fmt.Errorf("subcommand required")
 }
 
 type ConfigInitCmd struct {

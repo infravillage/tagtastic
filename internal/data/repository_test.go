@@ -58,3 +58,33 @@ func TestFilterItems_Exclude(t *testing.T) {
 		}
 	}
 }
+
+func TestGetThemeByName_NotFound(t *testing.T) {
+	repo, err := NewEmbeddedThemeRepository()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if _, err := repo.GetThemeByName("does-not-exist"); err == nil {
+		t.Fatalf("expected error for missing theme")
+	}
+}
+
+func TestFilterItems_ExcludeAlias(t *testing.T) {
+	repo, err := NewEmbeddedThemeRepository()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	theme, err := repo.GetThemeByName("birds")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	filtered := FilterItems(theme.Items, []string{"heron"})
+	for _, item := range filtered {
+		if normalizeName(item.Name) == "blue-heron" {
+			t.Fatalf("expected alias exclusion to remove Blue Heron")
+		}
+	}
+}

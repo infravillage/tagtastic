@@ -19,7 +19,7 @@ func (JSONFormatter) FormatName(item data.CodeName) (string, error) {
 		Description: item.Description,
 	}
 
-	output, err := json.Marshal(payload)
+	output, err := json.MarshalIndent(payload, "", "  ")
 	if err != nil {
 		return "", err
 	}
@@ -27,7 +27,7 @@ func (JSONFormatter) FormatName(item data.CodeName) (string, error) {
 }
 
 func (JSONFormatter) FormatList(items []data.CodeName) (string, error) {
-	output, err := json.Marshal(items)
+	output, err := json.MarshalIndent(items, "", "  ")
 	if err != nil {
 		return "", err
 	}
@@ -35,7 +35,7 @@ func (JSONFormatter) FormatList(items []data.CodeName) (string, error) {
 }
 
 func (JSONFormatter) FormatThemes(names []string) (string, error) {
-	output, err := json.Marshal(names)
+	output, err := json.MarshalIndent(names, "", "  ")
 	if err != nil {
 		return "", err
 	}

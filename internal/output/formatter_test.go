@@ -50,3 +50,41 @@ func TestShellFormatter(t *testing.T) {
 		t.Fatalf("unexpected shell payload: %q", payload)
 	}
 }
+
+func TestNewFormatter_Unknown(t *testing.T) {
+	if _, err := NewFormatter("nope"); err == nil {
+		t.Fatalf("expected error for unknown format")
+	}
+}
+
+func TestJSONFormatter_ListAndThemes(t *testing.T) {
+	formatter := JSONFormatter{}
+	items := []data.CodeName{
+		{Name: "Almond"},
+		{Name: "Antique Brass"},
+	}
+
+	listPayload, err := formatter.FormatList(items)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var listDecoded []map[string]any
+	if err := json.Unmarshal([]byte(listPayload), &listDecoded); err != nil {
+		t.Fatalf("unmarshal list: %v", err)
+	}
+	if len(listDecoded) != 2 {
+		t.Fatalf("expected 2 list items")
+	}
+
+	themesPayload, err := formatter.FormatThemes([]string{"birds", "crayola_colors"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var themesDecoded []string
+	if err := json.Unmarshal([]byte(themesPayload), &themesDecoded); err != nil {
+		t.Fatalf("unmarshal themes: %v", err)
+	}
+	if len(themesDecoded) != 2 || themesDecoded[0] != "birds" {
+		t.Fatalf("unexpected themes output")
+	}
+}
