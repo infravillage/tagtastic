@@ -1,0 +1,53 @@
+version: 2
+project_name: tagtastic
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod verify
+    - go test ./...
+
+builds:
+  - id: tagtastic
+    main: ./cmd/tagtastic
+    binary: tagtastic
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s
+      - -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+      - CHANGELOG.md
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ .Tag }}-snapshot"
+
+release:
+  name_template: "v{{ .Version }} – {{ .Env.RELEASE_CODENAME }}"
+
+changelog:
+  use: git
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^chore:'

@@ -1,0 +1,23 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build output
+dist/
+bin/
+
+# Coverage
+coverage.out
+
+# Go workspace
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+
+# Editor
+.vscode/
+.idea/

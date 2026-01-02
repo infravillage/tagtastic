@@ -1,0 +1,431 @@
+version: "1.0"
+themes:
+  crayola_colors:
+    id: crayola_colors
+    name: Crayola Colors
+    description: "Crayola crayon standard colors (Corpora)."
+    category: "Colors"
+    items:
+      - name: "Almond"
+        aliases: ["almond"]
+        description: "Hex #EFDECD"
+      - name: "Antique Brass"
+        aliases: ["antique-brass"]
+        description: "Hex #CD9575"
+      - name: "Apricot"
+        aliases: ["apricot"]
+        description: "Hex #FDD9B5"
+      - name: "Aquamarine"
+        aliases: ["aquamarine"]
+        description: "Hex #78DBE2"
+      - name: "Asparagus"
+        aliases: ["asparagus"]
+        description: "Hex #87A96B"
+      - name: "Atomic Tangerine"
+        aliases: ["atomic-tangerine"]
+        description: "Hex #FFA474"
+      - name: "Banana Mania"
+        aliases: ["banana-mania"]
+        description: "Hex #FAE7B5"
+      - name: "Beaver"
+        aliases: ["beaver"]
+        description: "Hex #9F8170"
+      - name: "Bittersweet"
+        aliases: ["bittersweet"]
+        description: "Hex #FD7C6E"
+      - name: "Black"
+        aliases: ["black"]
+        description: "Hex #000000"
+      - name: "Blue"
+        aliases: ["blue"]
+        description: "Hex #1F75FE"
+      - name: "Blue Bell"
+        aliases: ["blue-bell"]
+        description: "Hex #A2A2D0"
+      - name: "Blue Green"
+        aliases: ["blue-green"]
+        description: "Hex #0D98BA"
+      - name: "Blue Violet"
+        aliases: ["blue-violet"]
+        description: "Hex #7366BD"
+      - name: "Blush"
+        aliases: ["blush"]
+        description: "Hex #DE5D83"
+      - name: "Brick Red"
+        aliases: ["brick-red"]
+        description: "Hex #CB4154"
+      - name: "Brown"
+        aliases: ["brown"]
+        description: "Hex #B4674D"
+      - name: "Burnt Orange"
+        aliases: ["burnt-orange"]
+        description: "Hex #FF7F49"
+      - name: "Burnt Sienna"
+        aliases: ["burnt-sienna"]
+        description: "Hex #EA7E5D"
+      - name: "Cadet Blue"
+        aliases: ["cadet-blue"]
+        description: "Hex #B0B7C6"
+      - name: "Canary"
+        aliases: ["canary"]
+        description: "Hex #FFFF99"
+      - name: "Caribbean Green"
+        aliases: ["caribbean-green"]
+        description: "Hex #00CC99"
+      - name: "Carnation Pink"
+        aliases: ["carnation-pink"]
+        description: "Hex #FFAACC"
+      - name: "Cerise"
+        aliases: ["cerise"]
+        description: "Hex #DD4492"
+      - name: "Cerulean"
+        aliases: ["cerulean"]
+        description: "Hex #1DACD6"
+      - name: "Chestnut"
+        aliases: ["chestnut"]
+        description: "Hex #BC5D58"
+      - name: "Copper"
+        aliases: ["copper"]
+        description: "Hex #DD9475"
+      - name: "Cornflower"
+        aliases: ["cornflower"]
+        description: "Hex #9ACEEB"
+      - name: "Cotton Candy"
+        aliases: ["cotton-candy"]
+        description: "Hex #FFBCD9"
+      - name: "Dandelion"
+        aliases: ["dandelion"]
+        description: "Hex #FDDB6D"
+      - name: "Denim"
+        aliases: ["denim"]
+        description: "Hex #2B6CC4"
+      - name: "Desert Sand"
+        aliases: ["desert-sand"]
+        description: "Hex #EFCDB8"
+      - name: "Eggplant"
+        aliases: ["eggplant"]
+        description: "Hex #6E5160"
+      - name: "Electric Lime"
+        aliases: ["electric-lime"]
+        description: "Hex #CEFF1D"
+      - name: "Fern"
+        aliases: ["fern"]
+        description: "Hex #71BC78"
+      - name: "Forest Green"
+        aliases: ["forest-green"]
+        description: "Hex #6DAE81"
+      - name: "Fuchsia"
+        aliases: ["fuchsia"]
+        description: "Hex #C364C5"
+      - name: "Fuzzy Wuzzy"
+        aliases: ["fuzzy-wuzzy"]
+        description: "Hex #CC6666"
+      - name: "Gold"
+        aliases: ["gold"]
+        description: "Hex #E7C697"
+      - name: "Goldenrod"
+        aliases: ["goldenrod"]
+        description: "Hex #FCD975"
+      - name: "Granny Smith Apple"
+        aliases: ["granny-smith-apple"]
+        description: "Hex #A8E4A0"
+      - name: "Gray"
+        aliases: ["gray"]
+        description: "Hex #95918C"
+      - name: "Green"
+        aliases: ["green"]
+        description: "Hex #1CAC78"
+      - name: "Green Yellow"
+        aliases: ["green-yellow"]
+        description: "Hex #F0E891"
+      - name: "Hot Magenta"
+        aliases: ["hot-magenta"]
+        description: "Hex #FF1DCE"
+      - name: "Inchworm"
+        aliases: ["inchworm"]
+        description: "Hex #B2EC5D"
+      - name: "Indigo"
+        aliases: ["indigo"]
+        description: "Hex #5D76CB"
+      - name: "Jazzberry Jam"
+        aliases: ["jazzberry-jam"]
+        description: "Hex #CA3767"
+      - name: "Jungle Green"
+        aliases: ["jungle-green"]
+        description: "Hex #3BB08F"
+      - name: "Laser Lemon"
+        aliases: ["laser-lemon"]
+        description: "Hex #FEFE22"
+      - name: "Lavender"
+        aliases: ["lavender"]
+        description: "Hex #FCB4D5"
+      - name: "Macaroni and Cheese"
+        aliases: ["macaroni-and-cheese"]
+        description: "Hex #FFBD88"
+      - name: "Magenta"
+        aliases: ["magenta"]
+        description: "Hex #F664AF"
+      - name: "Mahogany"
+        aliases: ["mahogany"]
+        description: "Hex #CD4A4C"
+      - name: "Manatee"
+        aliases: ["manatee"]
+        description: "Hex #979AAA"
+      - name: "Mango Tango"
+        aliases: ["mango-tango"]
+        description: "Hex #FF8243"
+      - name: "Maroon"
+        aliases: ["maroon"]
+        description: "Hex #C8385A"
+      - name: "Mauvelous"
+        aliases: ["mauvelous"]
+        description: "Hex #EF98AA"
+      - name: "Melon"
+        aliases: ["melon"]
+        description: "Hex #FDBCB4"
+      - name: "Midnight Blue"
+        aliases: ["midnight-blue"]
+        description: "Hex #1A4876"
+      - name: "Mountain Meadow"
+        aliases: ["mountain-meadow"]
+        description: "Hex #30BA8F"
+      - name: "Navy Blue"
+        aliases: ["navy-blue"]
+        description: "Hex #1974D2"
+      - name: "Neon Carrot"
+        aliases: ["neon-carrot"]
+        description: "Hex #FFA343"
+      - name: "Olive Green"
+        aliases: ["olive-green"]
+        description: "Hex #BAB86C"
+      - name: "Orange"
+        aliases: ["orange"]
+        description: "Hex #FF7538"
+      - name: "Orchid"
+        aliases: ["orchid"]
+        description: "Hex #E6A8D7"
+      - name: "Outer Space"
+        aliases: ["outer-space"]
+        description: "Hex #414A4C"
+      - name: "Outrageous Orange"
+        aliases: ["outrageous-orange"]
+        description: "Hex #FF6E4A"
+      - name: "Pacific Blue"
+        aliases: ["pacific-blue"]
+        description: "Hex #1CA9C9"
+      - name: "Peach"
+        aliases: ["peach"]
+        description: "Hex #FFCFAB"
+      - name: "Periwinkle"
+        aliases: ["periwinkle"]
+        description: "Hex #C5D0E6"
+      - name: "Piggy Pink"
+        aliases: ["piggy-pink"]
+        description: "Hex #FDDDE6"
+      - name: "Pine Green"
+        aliases: ["pine-green"]
+        description: "Hex #158078"
+      - name: "Pink Flamingo"
+        aliases: ["pink-flamingo"]
+        description: "Hex #FC74FD"
+      - name: "Pink Sherbert"
+        aliases: ["pink-sherbert"]
+        description: "Hex #F78FA7"
+      - name: "Plum"
+        aliases: ["plum"]
+        description: "Hex #8E4585"
+      - name: "Purple Heart"
+        aliases: ["purple-heart"]
+        description: "Hex #7442C8"
+      - name: "Purple Mountain's Majesty"
+        aliases: ["purple-mountain-s-majesty"]
+        description: "Hex #9D81BA"
+      - name: "Purple Pizzazz"
+        aliases: ["purple-pizzazz"]
+        description: "Hex #FE4EDA"
+      - name: "Radical Red"
+        aliases: ["radical-red"]
+        description: "Hex #FF496C"
+      - name: "Raw Sienna"
+        aliases: ["raw-sienna"]
+        description: "Hex #D68A59"
+      - name: "Razzle Dazzle Rose"
+        aliases: ["razzle-dazzle-rose"]
+        description: "Hex #FF48D0"
+      - name: "Razzmatazz"
+        aliases: ["razzmatazz"]
+        description: "Hex #E3256B"
+      - name: "Red"
+        aliases: ["red"]
+        description: "Hex #EE204D"
+      - name: "Red Orange"
+        aliases: ["red-orange"]
+        description: "Hex #FF5349"
+      - name: "Red Violet"
+        aliases: ["red-violet"]
+        description: "Hex #C0448F"
+      - name: "Robin's Egg Blue"
+        aliases: ["robin-s-egg-blue"]
+        description: "Hex #1FCECB"
+      - name: "Royal Purple"
+        aliases: ["royal-purple"]
+        description: "Hex #7851A9"
+      - name: "Salmon"
+        aliases: ["salmon"]
+        description: "Hex #FF9BAA"
+      - name: "Scarlet"
+        aliases: ["scarlet"]
+        description: "Hex #FC2847"
+      - name: "Screamin' Green"
+        aliases: ["screamin-green"]
+        description: "Hex #76FF7A"
+      - name: "Sea Green"
+        aliases: ["sea-green"]
+        description: "Hex #93DFB8"
+      - name: "Sepia"
+        aliases: ["sepia"]
+        description: "Hex #A5694F"
+      - name: "Shadow"
+        aliases: ["shadow"]
+        description: "Hex #8A795D"
+      - name: "Shamrock"
+        aliases: ["shamrock"]
+        description: "Hex #45CEA2"
+      - name: "Shocking Pink"
+        aliases: ["shocking-pink"]
+        description: "Hex #FB7EFD"
+      - name: "Silver"
+        aliases: ["silver"]
+        description: "Hex #CDC5C2"
+      - name: "Sky Blue"
+        aliases: ["sky-blue"]
+        description: "Hex #80DAEB"
+      - name: "Spring Green"
+        aliases: ["spring-green"]
+        description: "Hex #ECEABE"
+      - name: "Sunglow"
+        aliases: ["sunglow"]
+        description: "Hex #FFCF48"
+      - name: "Sunset Orange"
+        aliases: ["sunset-orange"]
+        description: "Hex #FD5E53"
+      - name: "Tan"
+        aliases: ["tan"]
+        description: "Hex #FAA76C"
+      - name: "Tickle Me Pink"
+        aliases: ["tickle-me-pink"]
+        description: "Hex #FC89AC"
+      - name: "Timberwolf"
+        aliases: ["timberwolf"]
+        description: "Hex #DBD7D2"
+      - name: "Tropical Rain Forest"
+        aliases: ["tropical-rain-forest"]
+        description: "Hex #17806D"
+      - name: "Tumbleweed"
+        aliases: ["tumbleweed"]
+        description: "Hex #DEAA88"
+      - name: "Turquoise Blue"
+        aliases: ["turquoise-blue"]
+        description: "Hex #77DDE7"
+      - name: "Unmellow Yellow"
+        aliases: ["unmellow-yellow"]
+        description: "Hex #FFFF66"
+      - name: "Violet"
+        aliases: ["violet"]
+        description: "Hex #926EAE"
+      - name: "Violet Red"
+        aliases: ["violet-red"]
+        description: "Hex #F75394"
+      - name: "Vivid Tangerine"
+        aliases: ["vivid-tangerine"]
+        description: "Hex #FFA089"
+      - name: "Vivid Violet"
+        aliases: ["vivid-violet"]
+        description: "Hex #8F509D"
+      - name: "White"
+        aliases: ["white"]
+        description: "Hex #FFFFFF"
+      - name: "Wild Blue Yonder"
+        aliases: ["wild-blue-yonder"]
+        description: "Hex #A2ADD0"
+      - name: "Wild Strawberry"
+        aliases: ["wild-strawberry"]
+        description: "Hex #FF43A4"
+      - name: "Wild Watermelon"
+        aliases: ["wild-watermelon"]
+        description: "Hex #FC6C85"
+      - name: "Wisteria"
+        aliases: ["wisteria"]
+        description: "Hex #CDA4DE"
+      - name: "Yellow"
+        aliases: ["yellow"]
+        description: "Hex #FCE883"
+      - name: "Yellow Green"
+        aliases: ["yellow-green"]
+        description: "Hex #C5E384"
+      - name: "Yellow Orange"
+        aliases: ["yellow-orange"]
+        description: "Hex #FFAE42"
+  birds:
+    id: birds
+    name: Birds
+    description: "Avian species."
+    category: "Nature"
+    items:
+      - name: "Albatross"
+        aliases: ["albatross"]
+        description: "Large ocean bird"
+      - name: "Blue Heron"
+        aliases: ["blue-heron", "heron"]
+        description: "Wading bird"
+      - name: "Crane"
+        aliases: ["crane"]
+        description: "Tall wading bird"
+      - name: "Dove"
+        aliases: ["dove"]
+        description: "Symbol of peace"
+      - name: "Eagle"
+        aliases: ["eagle"]
+        description: "Powerful raptor"
+  cities:
+    id: cities
+    name: Cities
+    description: "World cities."
+    category: "Places"
+    items:
+      - name: "Kyoto"
+        aliases: ["kyoto"]
+        description: "Japan"
+      - name: "Lisbon"
+        aliases: ["lisbon"]
+        description: "Portugal"
+      - name: "Oslo"
+        aliases: ["oslo"]
+        description: "Norway"
+      - name: "Quito"
+        aliases: ["quito"]
+        description: "Ecuador"
+      - name: "Reykjavik"
+        aliases: ["reykjavik"]
+        description: "Iceland"
+  landmarks:
+    id: landmarks
+    name: Landmarks
+    description: "Natural landmarks and peaks."
+    category: "Places"
+    items:
+      - name: "Denali"
+        aliases: ["denali"]
+        description: "Alaska"
+      - name: "Everest"
+        aliases: ["everest"]
+        description: "Himalayas"
+      - name: "Fuji"
+        aliases: ["fuji"]
+        description: "Japan"
+      - name: "Kilimanjaro"
+        aliases: ["kilimanjaro"]
+        description: "Tanzania"
+      - name: "Uluru"
+        aliases: ["uluru"]
+        description: "Australia"
