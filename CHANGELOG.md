@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - N/A
 
-## [0.1.0-alpha.1] – "Almond" – 2026-01-01
+## [0.1.0-alpha.1] – "Antique Brass" – 2026-01-01
 
 ### Added
 - Placeholder version entry for the first alpha release.

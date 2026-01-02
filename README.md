@@ -102,10 +102,10 @@ Data and tooling:
 
 ## Release Checklist (Appendix)
 - Confirm tests pass: `go test ./...`
-- Run `make codename` and assign the next Crayola color.
+- Run `make codename` to select the next Crayola color via TAGtastic.
 - Update `CHANGELOG.md` with the release entry and codename.
 - Update `VERSION` if used for local builds.
-- Tag the release with SemVer (`vX.Y.Z[-alpha.N]`) and push the tag.
+- Tag the release with SemVer (`vX.Y.Z[-alpha.N]`) and the TAGtastic codename.
 - Ensure GitHub Actions runs GoReleaser and publishes the release.
 - Use GoReleaser for all release binaries (no manual packaging).
 
