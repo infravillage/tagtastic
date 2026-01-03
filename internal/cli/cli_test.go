@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/infravillage/tagtastic/internal/data"
 	"github.com/alecthomas/kong"
+	"github.com/infravillage/tagtastic/internal/data"
 )
 
 func runCLI(t *testing.T, args ...string) (string, error) {
@@ -164,6 +164,36 @@ func TestConfigReset_MissingFile(t *testing.T) {
 
 	if _, err := runCLI(t, "config", "reset", "--path", configPath); err != nil {
 		t.Fatalf("config reset should ignore missing file, got: %v", err)
+	}
+}
+
+func TestConfigInit_DryRun(t *testing.T) {
+	tmp := t.TempDir()
+	configPath := filepath.Join(tmp, "config.yaml")
+
+	if _, err := runCLI(t, "config", "init", "--path", configPath, "--dry-run"); err != nil {
+		t.Fatalf("config init dry-run failed: %v", err)
+	}
+
+	if _, err := os.Stat(configPath); err == nil {
+		t.Fatalf("expected no config file created on dry-run")
+	}
+}
+
+func TestConfigReset_DryRun(t *testing.T) {
+	tmp := t.TempDir()
+	configPath := filepath.Join(tmp, "config.yaml")
+
+	if err := os.WriteFile(configPath, []byte("default_theme: birds\n"), 0o600); err != nil {
+		t.Fatalf("write config: %v", err)
+	}
+
+	if _, err := runCLI(t, "config", "reset", "--path", configPath, "--dry-run"); err != nil {
+		t.Fatalf("config reset dry-run failed: %v", err)
+	}
+
+	if _, err := os.Stat(configPath); err != nil {
+		t.Fatalf("expected config file to remain on dry-run")
 	}
 }
 

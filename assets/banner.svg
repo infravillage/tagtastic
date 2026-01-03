@@ -1,0 +1,13 @@
+<svg width="1200" height="240" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B1F2A"/>
+      <stop offset="1" stop-color="#193647"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="240" rx="24" fill="url(#bg)"/>
+  <rect x="60" y="52" width="8" height="136" fill="#F9A826"/>
+  <text x="90" y="110" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700">TAGtastic</text>
+  <text x="90" y="156" fill="#CBE3F1" font-family="Arial, Helvetica, sans-serif" font-size="24">Human-readable release codenames for CI/CD workflows</text>
+  <text x="90" y="190" fill="#8FB4C8" font-family="Arial, Helvetica, sans-serif" font-size="18">Powered By InfraVillage™</text>
+</svg>

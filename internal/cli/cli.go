@@ -32,12 +32,14 @@ type VersionInfo struct {
 }
 
 type CLI struct {
-	Generate GenerateCmd `cmd:"" help:"Generate a codename"`
-	List     ListCmd     `cmd:"" help:"List codenames in a theme"`
-	Themes   ThemesCmd   `cmd:"" help:"List available themes"`
-	Validate ValidateCmd `cmd:"" help:"Validate a codename"`
-	Config   ConfigCmd   `cmd:"" help:"Manage local config"`
-	Version  VersionCmd  `cmd:"" help:"Show version"`
+	Quiet      bool        `short:"q" long:"quiet" help:"Suppress non-essential output"`
+	JSONErrors bool        `long:"json-errors" help:"Emit errors as JSON"`
+	Generate   GenerateCmd `cmd:"" help:"Generate a codename"`
+	List       ListCmd     `cmd:"" help:"List codenames in a theme"`
+	Themes     ThemesCmd   `cmd:"" help:"List available themes"`
+	Validate   ValidateCmd `cmd:"" help:"Validate a codename"`
+	Config     ConfigCmd   `cmd:"" help:"Manage local config"`
+	Version    VersionCmd  `cmd:"" help:"Show version"`
 }
 
 func NewCLI(deps Dependencies) *CLI {
@@ -198,9 +200,10 @@ type ConfigCmd struct {
 }
 
 type ConfigInitCmd struct {
-	Path  string `short:"p" long:"path" help:"Config file path"`
-	Force bool   `long:"force" help:"Overwrite existing config"`
-	deps  Dependencies
+	Path   string `short:"p" long:"path" help:"Config file path"`
+	Force  bool   `long:"force" help:"Overwrite existing config"`
+	DryRun bool   `long:"dry-run" help:"Preview changes without writing"`
+	deps   Dependencies
 }
 
 func (cmd ConfigInitCmd) Run() error {
@@ -213,6 +216,11 @@ func (cmd ConfigInitCmd) Run() error {
 		if _, err := os.Stat(path); err == nil {
 			return fmt.Errorf("config already exists at %s", path)
 		}
+	}
+
+	if cmd.DryRun {
+		fmt.Fprintf(cmd.deps.Out, "Dry run: would initialize config at %s\n", path)
+		return nil
 	}
 
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
@@ -245,6 +253,9 @@ func (cmd ConfigShowCmd) Run() error {
 
 	payload, err := os.ReadFile(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("config not found at %s (run: tagtastic config init)", path)
+		}
 		return err
 	}
 
@@ -253,14 +264,20 @@ func (cmd ConfigShowCmd) Run() error {
 }
 
 type ConfigResetCmd struct {
-	Path string `short:"p" long:"path" help:"Config file path"`
-	deps Dependencies
+	Path   string `short:"p" long:"path" help:"Config file path"`
+	DryRun bool   `long:"dry-run" help:"Preview changes without deleting"`
+	deps   Dependencies
 }
 
 func (cmd ConfigResetCmd) Run() error {
 	path, err := config.ResolvePath(cmd.Path)
 	if err != nil {
 		return err
+	}
+
+	if cmd.DryRun {
+		fmt.Fprintf(cmd.deps.Out, "Dry run: would remove config at %s\n", path)
+		return nil
 	}
 
 	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
