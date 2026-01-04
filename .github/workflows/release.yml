@@ -75,7 +75,9 @@ jobs:
             echo "Unable to extract codename for ${TAG_NAME}. Ensure an annotated tag or .tagtastic.yaml entry exists." >&2
             exit 1
           fi
+          CODENAME_SLUG=$(printf "%s" "${CODENAME}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
           echo "RELEASE_CODENAME=${CODENAME}" >> $GITHUB_ENV
+          echo "RELEASE_CODENAME_SLUG=${CODENAME_SLUG}" >> $GITHUB_ENV
           echo "Using codename: ${CODENAME}"
 
       - name: Run GoReleaser
@@ -87,3 +89,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_CODENAME: ${{ env.RELEASE_CODENAME }}
+          RELEASE_CODENAME_SLUG: ${{ env.RELEASE_CODENAME_SLUG }}
