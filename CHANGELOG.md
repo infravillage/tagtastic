@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - N/A
 
 ### Fixed
-- N/A
+- Release helper now handles flags after the version argument correctly in dry-run mode.
 
 ### Deprecated
 - N/A

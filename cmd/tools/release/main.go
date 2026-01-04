@@ -46,8 +46,9 @@ func main() {
 	fs := flag.NewFlagSet("release", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 
-	quietArg := hasFlag(os.Args[1:], "--quiet", "-q")
-	jsonErrorsArg := hasFlag(os.Args[1:], "--json-errors")
+	parsedArgs := reorderArgs(os.Args[1:])
+	quietArg := hasFlag(parsedArgs, "--quiet", "-q")
+	jsonErrorsArg := hasFlag(parsedArgs, "--json-errors")
 
 	help := fs.Bool("help", false, "Show help")
 	fs.BoolVar(help, "h", false, "Show help (shorthand)")
@@ -77,7 +78,7 @@ func main() {
 		fs.PrintDefaults()
 	}
 
-	if err := fs.Parse(os.Args[1:]); err != nil {
+	if err := fs.Parse(parsedArgs); err != nil {
 		reportError(err, 2, jsonErrorsArg, quietArg, func() { printUsage(!quietArg) })
 	}
 
@@ -394,6 +395,38 @@ func reportError(err error, code int, jsonErrors, quiet bool, usage func()) {
 		usage()
 	}
 	os.Exit(code)
+}
+
+func reorderArgs(args []string) []string {
+	if len(args) == 0 {
+		return args
+	}
+
+	valueFlags := map[string]struct{}{
+		"--codename": {},
+		"--date":     {},
+		"--config":   {},
+	}
+
+	var flags []string
+	var positionals []string
+
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if strings.HasPrefix(arg, "-") {
+			flags = append(flags, arg)
+			if _, ok := valueFlags[arg]; ok {
+				if i+1 < len(args) {
+					flags = append(flags, args[i+1])
+					i++
+				}
+			}
+			continue
+		}
+		positionals = append(positionals, arg)
+	}
+
+	return append(flags, positionals...)
 }
 
 func resolveConfigPath(root, override string) (string, error) {
