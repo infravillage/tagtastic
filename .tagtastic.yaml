@@ -1,0 +1,9 @@
+default_theme: crayola_colors
+default_format: text
+used_codenames:
+    0.1.0-beta.2: Apricot
+api:
+    enabled: false
+    endpoint: ""
+    cache_dir: ""
+    cache_ttl: ""
