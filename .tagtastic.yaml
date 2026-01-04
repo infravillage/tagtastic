@@ -2,6 +2,7 @@ default_theme: crayola_colors
 default_format: text
 used_codenames:
     0.1.0-beta.2: Apricot
+    0.1.1: Aquamarine
 api:
     enabled: false
     endpoint: ""
