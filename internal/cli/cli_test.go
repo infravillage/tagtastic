@@ -197,6 +197,27 @@ func TestConfigReset_DryRun(t *testing.T) {
 	}
 }
 
+func TestGenerateCommand_RecordCreatesConfig(t *testing.T) {
+	tmp := t.TempDir()
+	configPath := filepath.Join(tmp, ".tagtastic.yaml")
+
+	if _, err := runCLI(t, "--config-path", configPath, "generate", "--theme", "birds", "--seed", "1", "--record"); err != nil {
+		t.Fatalf("generate record failed: %v", err)
+	}
+
+	payload, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatalf("read config: %v", err)
+	}
+	content := string(payload)
+	if !strings.Contains(content, "default_theme: birds") {
+		t.Fatalf("expected default_theme to be recorded")
+	}
+	if !strings.Contains(content, "used_codenames:") {
+		t.Fatalf("expected used_codenames recorded")
+	}
+}
+
 func TestGenerateCommand_Formats(t *testing.T) {
 	jsonOutput, err := runCLI(t, "generate", "--theme", "birds", "--seed", "2", "--format", "json")
 	if err != nil {

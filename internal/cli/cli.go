@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/infravillage/tagtastic/internal/config"
@@ -19,10 +20,11 @@ import (
 )
 
 type Dependencies struct {
-	Themes           data.ThemeRepository
-	FormatterFactory func(format string) (output.Formatter, error)
-	Out              io.Writer
-	VersionInfo      VersionInfo
+	Themes             data.ThemeRepository
+	FormatterFactory   func(format string) (output.Formatter, error)
+	Out                io.Writer
+	VersionInfo        VersionInfo
+	ConfigPathResolver func() string
 }
 
 type VersionInfo struct {
@@ -34,6 +36,7 @@ type VersionInfo struct {
 type CLI struct {
 	Quiet      bool        `short:"q" long:"quiet" help:"Suppress non-essential output"`
 	JSONErrors bool        `long:"json-errors" help:"Emit errors as JSON"`
+	ConfigPath string      `long:"config-path" help:"Config file path override"`
 	Generate   GenerateCmd `cmd:"" help:"Generate a codename"`
 	List       ListCmd     `cmd:"" help:"List codenames in a theme"`
 	Themes     ThemesCmd   `cmd:"" help:"List available themes"`
@@ -59,9 +62,17 @@ func NewCLI(deps Dependencies) *CLI {
 		Version:  VersionCmd{deps: deps},
 	}
 
+	app.Generate.deps.ConfigPathResolver = func() string { return app.ConfigPath }
+	app.List.deps.ConfigPathResolver = func() string { return app.ConfigPath }
+	app.Themes.deps.ConfigPathResolver = func() string { return app.ConfigPath }
+	app.Validate.deps.ConfigPathResolver = func() string { return app.ConfigPath }
 	app.Config.Init.deps = deps
 	app.Config.Show.deps = deps
 	app.Config.Reset.deps = deps
+	app.Config.Init.deps.ConfigPathResolver = func() string { return app.ConfigPath }
+	app.Config.Show.deps.ConfigPathResolver = func() string { return app.ConfigPath }
+	app.Config.Reset.deps.ConfigPathResolver = func() string { return app.ConfigPath }
+	app.Config.deps.ConfigPathResolver = func() string { return app.ConfigPath }
 
 	return app
 }
@@ -71,6 +82,7 @@ type GenerateCmd struct {
 	Seed    int64    `short:"s" long:"seed" help:"Random seed (0 uses time)" default:"0"`
 	Exclude []string `short:"e" long:"exclude" help:"Comma-separated names to exclude" sep:","`
 	Format  string   `short:"f" long:"format" help:"Output format (text, json, shell)" default:"text"`
+	Record  bool     `long:"record" help:"Record the selected codename in config"`
 	deps    Dependencies
 }
 
@@ -104,6 +116,13 @@ func (cmd GenerateCmd) Run() error {
 	}
 
 	fmt.Fprintln(cmd.deps.Out, outputText)
+
+	if cmd.Record {
+		if err := recordCodename(cmd, selected); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -207,7 +226,15 @@ type ConfigInitCmd struct {
 }
 
 func (cmd ConfigInitCmd) Run() error {
-	path, err := config.ResolvePath(cmd.Path)
+	path := cmd.Path
+	if strings.TrimSpace(path) == "" {
+		resolved, err := resolveConfigPath(cmd.deps)
+		if err != nil {
+			return err
+		}
+		path = resolved
+	}
+	path, err := config.ResolvePath(path)
 	if err != nil {
 		return err
 	}
@@ -246,7 +273,15 @@ type ConfigShowCmd struct {
 }
 
 func (cmd ConfigShowCmd) Run() error {
-	path, err := config.ResolvePath(cmd.Path)
+	path := cmd.Path
+	if strings.TrimSpace(path) == "" {
+		resolved, err := resolveConfigPath(cmd.deps)
+		if err != nil {
+			return err
+		}
+		path = resolved
+	}
+	path, err := config.ResolvePath(path)
 	if err != nil {
 		return err
 	}
@@ -270,7 +305,15 @@ type ConfigResetCmd struct {
 }
 
 func (cmd ConfigResetCmd) Run() error {
-	path, err := config.ResolvePath(cmd.Path)
+	path := cmd.Path
+	if strings.TrimSpace(path) == "" {
+		resolved, err := resolveConfigPath(cmd.deps)
+		if err != nil {
+			return err
+		}
+		path = resolved
+	}
+	path, err := config.ResolvePath(path)
 	if err != nil {
 		return err
 	}
@@ -326,4 +369,52 @@ func containsName(items []data.CodeName, name string) bool {
 	}
 
 	return false
+}
+
+func recordCodename(cmd GenerateCmd, selected data.CodeName) error {
+	path, err := resolveConfigPath(cmd.deps)
+	if err != nil {
+		return err
+	}
+
+	cfg, err := config.Load(path)
+	if err != nil {
+		return err
+	}
+
+	if cfg.UsedCodenames == nil {
+		cfg.UsedCodenames = map[string]string{}
+	}
+
+	cfg.DefaultTheme = cmd.Theme
+	cfg.DefaultFormat = cmd.Format
+
+	cfg.UsedCodenames["unreleased"] = selected.Name
+
+	payload, err := config.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(path, payload, 0o600); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func resolveConfigPath(deps Dependencies) (string, error) {
+	if deps.ConfigPathResolver != nil {
+		if resolved := strings.TrimSpace(deps.ConfigPathResolver()); resolved != "" {
+			return config.ResolvePath(resolved)
+		}
+	}
+	if env := os.Getenv("TAGTASTIC_CONFIG"); strings.TrimSpace(env) != "" {
+		return config.ResolvePath(env)
+	}
+	return config.ResolvePath(".tagtastic.yaml")
 }

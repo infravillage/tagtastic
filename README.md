@@ -1,4 +1,4 @@
-![TAGtastic banner](assets/what-is-tagtastic.png)
+![TAGtastic banner](assets/banner.svg)
 
 # TAGtastic 🏷️
 
@@ -65,6 +65,8 @@ CI/automation options:
 - `--quiet` suppresses non-essential output.
 - `--json-errors` emits machine-readable error output.
 - `config init/reset --dry-run` previews changes without writing.
+- `--config-path <path>` overrides the config file location.
+- `generate --record` writes the selected codename to the repo config.
 
 ---
 
@@ -129,6 +131,21 @@ Data and tooling:
 
 ---
 
+## Config Precedence
+TAGtastic loads config in this order:
+1) `--config-path <path>`
+2) `TAGTASTIC_CONFIG` environment variable
+3) `./.tagtastic.yaml` (repo-local, preferred)
+
+Repo config is optional and created when you use `generate --record` or the release helper.
+
+Rules:
+- Config is never auto-created unless you explicitly record or run the release helper.
+- `generate --record` writes the selected codename to `.tagtastic.yaml`.
+- Release helper writes the codename for the version it tags.
+
+---
+
 ## GoReleaser + Codename Flow
 GoReleaser does not generate codenames by itself. TAGtastic provides the codename and passes it into GoReleaser via `RELEASE_CODENAME`.
 
@@ -143,6 +160,30 @@ Recommended flow:
 3) Push the tag:
    - `git push origin vX.Y.Z[-alpha.N]`
 4) GitHub Actions runs GoReleaser and publishes the release.
+
+## Real-World Use Cases
+Release tag with codename (manual path):
+```bash
+CODENAME=$(make codename -s)
+git tag -a v0.1.0-beta.2 -m "v0.1.0-beta.2 – ${CODENAME}"
+git push origin v0.1.0-beta.2
+```
+
+Release helper (short path):
+```bash
+go run ./cmd/tools/release 0.1.0-beta.2 --commit
+git push origin v0.1.0-beta.2
+```
+
+Record a codename for CI workflows without tagging:
+```bash
+tagtastic generate --theme crayola_colors --record
+```
+
+Custom codename override (when you need a manual choice):
+```bash
+go run ./cmd/tools/release 0.1.0-beta.2 --codename \"Custom Name\"
+```
 
 ## Automating CHANGELOG.md and VERSION
 GoReleaser does not auto-edit `CHANGELOG.md` or `VERSION`. You can automate this in CI or locally by adding a small script (Go or shell) that:
@@ -170,6 +211,8 @@ go run ./cmd/tools/release 0.1.0-alpha.2 --dry-run
 CI/automation options:
 - `--quiet` suppresses non-essential output.
 - `--json-errors` emits machine-readable error output.
+- `--config <path>` overrides the repo config location.
+- `--no-config-update` skips writing `.tagtastic.yaml`.
 
 Makefile shortcut:
 ```bash

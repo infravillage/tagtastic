@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/infravillage/tagtastic/internal/config"
 	"golang.org/x/term"
 )
 
@@ -57,6 +58,8 @@ func main() {
 	fs.BoolVar(quiet, "q", false, "Suppress non-essential output (shorthand)")
 	jsonErrors := fs.Bool("json-errors", false, "Emit errors as JSON")
 	dryRun := fs.Bool("dry-run", false, "Preview changes without writing files or tagging")
+	configPath := fs.String("config", "", "Config file path override")
+	noConfigUpdate := fs.Bool("no-config-update", false, "Skip updating repo config")
 
 	printUsage := func(showBanner bool) {
 		if shouldShowBanner() && showBanner {
@@ -113,10 +116,18 @@ func main() {
 		}
 	}
 
+	configTarget, err := resolveConfigPath(root, *configPath)
+	if err != nil {
+		reportError(err, 1, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+	}
+
 	if *dryRun {
 		fmt.Printf("Dry run: would prepare v%s – %s\n", version, resolvedCodename)
 		fmt.Printf("Dry run: would update CHANGELOG.md and VERSION (date %s)\n", resolvedDate)
 		fmt.Printf("Dry run: would create tag v%s\n", version)
+		if !*noConfigUpdate {
+			fmt.Printf("Dry run: would update config at %s\n", configTarget)
+		}
 		return
 	}
 
@@ -130,6 +141,12 @@ func main() {
 
 	if *commit {
 		if err := commitRelease(version, resolvedCodename); err != nil {
+			reportError(err, 1, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+		}
+	}
+
+	if !*noConfigUpdate {
+		if err := updateRepoConfig(configTarget, resolvedCodename, version); err != nil {
 			reportError(err, 1, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
 		}
 	}
@@ -377,4 +394,48 @@ func reportError(err error, code int, jsonErrors, quiet bool, usage func()) {
 		usage()
 	}
 	os.Exit(code)
+}
+
+func resolveConfigPath(root, override string) (string, error) {
+	if strings.TrimSpace(override) != "" {
+		return config.ResolvePath(override)
+	}
+	if env := strings.TrimSpace(os.Getenv("TAGTASTIC_CONFIG")); env != "" {
+		return config.ResolvePath(env)
+	}
+	repoPath := filepath.Join(root, ".tagtastic.yaml")
+	if _, err := os.Stat(repoPath); err == nil {
+		return config.ResolvePath(repoPath)
+	}
+	return config.ResolvePath(repoPath)
+}
+
+func updateRepoConfig(path, codename, version string) error {
+	cfg, err := config.Load(path)
+	if err != nil {
+		return err
+	}
+
+	if cfg.DefaultTheme == "" {
+		cfg.DefaultTheme = "crayola_colors"
+	}
+	if cfg.DefaultFormat == "" {
+		cfg.DefaultFormat = "text"
+	}
+	if cfg.UsedCodenames == nil {
+		cfg.UsedCodenames = map[string]string{}
+	}
+
+	cfg.UsedCodenames[version] = codename
+
+	payload, err := config.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, payload, 0o600)
 }

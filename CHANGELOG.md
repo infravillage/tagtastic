@@ -15,16 +15,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - N/A
 
+### Deprecated
+- N/A
+
+### Removed
+- N/A
+
+### Security
+- N/A
+
 ## [0.1.0-beta.1] – "Almond" – 2026-01-03
 
 ### Added
 - Initial CLI scaffold and project documentation.
+- Release helper tool to prepare releases, update files, and tag versions.
+- Repo-local config support with precedence (`--config-path`, `TAGTASTIC_CONFIG`, `./.tagtastic.yaml`).
+- `generate --record` to write selected codenames into repo config.
+- CI-friendly flags: `--quiet`, `--json-errors`, and `--dry-run` (where applicable).
+- Banner asset and repo badges (Go Report Card, release status, license, Go version).
+- Quality checks via `make quality` and Go Report Card guidance.
+- Expanded documentation with real-world release workflows and CI usage examples.
 
 ### Changed
-- N/A
+- Shell output now uses aliases (slug style) with a safe fallback.
+- JSON output is pretty-printed for readability.
+- Banner and help behavior tuned for interactive vs. CI usage.
+- Codename lookup prefers git tags, then config, then changelog.
 
 ### Fixed
-- N/A
+- Changelog reference links corrected for beta and unreleased entries.
 
 ## [0.1.0-alpha.1] – "Antique Brass" – 2026-01-01
 
