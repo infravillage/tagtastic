@@ -226,6 +226,10 @@ CI/automation options:
 - `--config <path>` overrides the repo config location.
 - `--no-config-update` skips writing `.tagtastic.yaml`.
 
+CI guidance:
+- Prefer the release helper in CI to keep SemVer monotonic and reproducible.
+- Use `--bump` when you want CI to compute the next version; the helper will fail if the new version would go backward.
+
 Makefile shortcut:
 ```bash
 make release-prep VERSION=0.1.0-alpha.2
