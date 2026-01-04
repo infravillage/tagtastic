@@ -68,10 +68,10 @@ func main() {
 
 	printUsage := func(showBanner bool) {
 		if shouldShowBanner() && showBanner {
-			fmt.Fprintln(os.Stdout, renderBanner())
-			fmt.Fprintln(os.Stdout)
+			_, _ = fmt.Fprintln(os.Stdout, renderBanner())
+			_, _ = fmt.Fprintln(os.Stdout)
 		}
-		fmt.Fprintln(os.Stdout, "TAGtastic release helper (supporting tool)")
+		_, _ = fmt.Fprintln(os.Stdout, "TAGtastic release helper (supporting tool)")
 		fmt.Fprintln(os.Stdout, "Codename is auto-selected unless --codename is provided.")
 		fmt.Fprintln(os.Stdout)
 		fmt.Fprintln(os.Stdout, "Usage:")

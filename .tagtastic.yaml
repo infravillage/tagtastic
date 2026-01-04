@@ -3,6 +3,7 @@ default_format: text
 used_codenames:
     0.1.0-beta.2: Apricot
     0.1.1-beta.1: Aquamarine
+    0.2.0-beta.1: Asparagus
 api:
     enabled: false
     endpoint: ""

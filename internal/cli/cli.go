@@ -193,7 +193,7 @@ func (cmd ValidateCmd) Run() error {
 				continue
 			}
 			if containsName(theme.Items, cmd.Name) {
-				fmt.Fprintf(cmd.deps.Out, "Found in theme '%s'\n", themeName)
+				_, _ = fmt.Fprintf(cmd.deps.Out, "Found in theme '%s'\n", themeName)
 				return nil
 			}
 		}
@@ -206,7 +206,7 @@ func (cmd ValidateCmd) Run() error {
 	}
 
 	if containsName(theme.Items, cmd.Name) {
-		fmt.Fprintf(cmd.deps.Out, "Found in theme '%s'\n", cmd.Theme)
+		_, _ = fmt.Fprintf(cmd.deps.Out, "Found in theme '%s'\n", cmd.Theme)
 		return nil
 	}
 	return fmt.Errorf("name '%s' not found in theme '%s'", cmd.Name, cmd.Theme)
@@ -247,7 +247,7 @@ func (cmd ConfigInitCmd) Run() error {
 	}
 
 	if cmd.DryRun {
-		fmt.Fprintf(cmd.deps.Out, "Dry run: would initialize config at %s\n", path)
+		_, _ = fmt.Fprintf(cmd.deps.Out, "Dry run: would initialize config at %s\n", path)
 		return nil
 	}
 
@@ -295,7 +295,7 @@ func (cmd ConfigShowCmd) Run() error {
 		return err
 	}
 
-	fmt.Fprint(cmd.deps.Out, string(payload))
+	_, _ = fmt.Fprint(cmd.deps.Out, string(payload))
 	return nil
 }
 

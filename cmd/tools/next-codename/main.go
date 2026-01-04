@@ -88,7 +88,7 @@ func loadUsedCodenames(path string) (map[string]struct{}, error) {
 		}
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	used := make(map[string]struct{})
 	scanner := bufio.NewScanner(file)
