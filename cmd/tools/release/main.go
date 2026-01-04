@@ -678,14 +678,6 @@ func validatePreLabel(label string) error {
 	}
 }
 
-func nextPreNum(baseVersion, label string) (int, error) {
-	tags, err := listTags()
-	if err != nil {
-		return 0, err
-	}
-	return nextPreNumFromTags(baseVersion, label, tags)
-}
-
 func nextPreNumFromTags(baseVersion, label string, tags []string) (int, error) {
 	base, err := parseSemVer(baseVersion)
 	if err != nil {
