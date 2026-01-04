@@ -3,7 +3,7 @@
 # TAGtastic 🏷️
 
 [![Release](https://img.shields.io/github/actions/workflow/status/infravillage/tagtastic/release.yml?label=release&logo=githubactions&logoColor=white)](https://github.com/infravillage/tagtastic/actions/workflows/release.yml)
-[![CI](https://img.shields.io/github/actions/workflow/status/infravillage/tagtastic/ci.yml?label=ci&logo=githubactions&logoColor=white)](https://github.com/infravillage/tagtastic/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/infravillage/tagtastic/ci.yml?branch=main&label=ci&logo=githubactions&logoColor=white)](https://github.com/infravillage/tagtastic/actions/workflows/ci.yml)
 [![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](https://go.dev/doc/devel/release)
 [![Go Report Card](https://goreportcard.com/badge/github.com/infravillage/tagtastic)](https://goreportcard.com/report/github.com/infravillage/tagtastic)
 [![License](https://img.shields.io/github/license/infravillage/tagtastic?color=2C3E50)](LICENSE)
