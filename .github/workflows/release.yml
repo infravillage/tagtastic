@@ -51,6 +51,11 @@ jobs:
           if [ -z "${SUBJECT}" ] && [ -f ".tagtastic.yaml" ]; then
             SUBJECT=$(awk -F': ' -v key="${TAG_NAME#v}" '$1 ~ "^[[:space:]]*"key"$" {print $2}' .tagtastic.yaml)
           fi
+
+          if [ -z "${SUBJECT}" ]; then
+            CHANGELOG_LINE=$(git show "${TAG_NAME}:CHANGELOG.md" | awk -v ver="${TAG_NAME#v}" '$0 ~ "^## \\["ver"\\]" {print; exit}')
+            SUBJECT=$(printf "%s\n" "${CHANGELOG_LINE}" | awk -F'\"' '{print $2}')
+          fi
           CODENAME=""
           if echo "${SUBJECT}" | grep -q " – "; then
             CODENAME="${SUBJECT#* – }"
