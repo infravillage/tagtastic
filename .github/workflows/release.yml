@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish (e.g., v0.1.0-beta.2)"
+        required: false
 
 permissions:
   contents: write
@@ -25,8 +29,25 @@ jobs:
 
       - name: Determine release codename
         run: |
-          TAG_NAME="${GITHUB_REF_NAME}"
-          SUBJECT=$(git for-each-ref "refs/tags/${TAG_NAME}" --format="%(contents:subject)")
+          TAG_NAME="${{ inputs.tag }}"
+          if [ -z "${TAG_NAME}" ]; then
+            TAG_NAME="${GITHUB_REF_NAME}"
+          fi
+          case "${TAG_NAME}" in
+            v*) ;;
+            *)
+              echo "Tag name must start with v (got: ${TAG_NAME})" >&2
+              exit 1
+              ;;
+          esac
+
+          RAW_TAG=$(git cat-file -p "${TAG_NAME}")
+          if ! echo "${RAW_TAG}" | grep -q "^tag "; then
+            echo "Tag ${TAG_NAME} must be annotated (use: git tag -a)" >&2
+            exit 1
+          fi
+
+          SUBJECT=$(printf "%s\n" "${RAW_TAG}" | awk 'BEGIN{found=0} /^$/{found=1; next} found{print; exit}')
           CODENAME=""
           if echo "${SUBJECT}" | grep -q " – "; then
             CODENAME="${SUBJECT#* – }"
