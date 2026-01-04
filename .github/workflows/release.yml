@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -41,13 +42,15 @@ jobs:
               ;;
           esac
 
-          RAW_TAG=$(git cat-file -p "${TAG_NAME}")
-          if ! echo "${RAW_TAG}" | grep -q "^tag "; then
-            echo "Tag ${TAG_NAME} must be annotated (use: git tag -a)" >&2
-            exit 1
+          RAW_TAG=$(git cat-file -p "${TAG_NAME}" || true)
+          SUBJECT=""
+          if echo "${RAW_TAG}" | grep -q "^tag "; then
+            SUBJECT=$(printf "%s\n" "${RAW_TAG}" | awk 'BEGIN{found=0} /^$/{found=1; next} found{print; exit}')
           fi
 
-          SUBJECT=$(printf "%s\n" "${RAW_TAG}" | awk 'BEGIN{found=0} /^$/{found=1; next} found{print; exit}')
+          if [ -z "${SUBJECT}" ] && [ -f ".tagtastic.yaml" ]; then
+            SUBJECT=$(awk -F': ' '/^  '"${TAG_NAME#v}"':/ {print $2}' .tagtastic.yaml)
+          fi
           CODENAME=""
           if echo "${SUBJECT}" | grep -q " – "; then
             CODENAME="${SUBJECT#* – }"
@@ -55,7 +58,7 @@ jobs:
             CODENAME="${SUBJECT#* - }"
           fi
           if [ -z "${CODENAME}" ]; then
-            echo "Unable to extract codename from tag subject: ${SUBJECT}" >&2
+            echo "Unable to extract codename for ${TAG_NAME}. Ensure an annotated tag or .tagtastic.yaml entry exists." >&2
             exit 1
           fi
           echo "RELEASE_CODENAME=${CODENAME}" >> $GITHUB_ENV
