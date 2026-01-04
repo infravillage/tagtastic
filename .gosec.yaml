@@ -1,0 +1,21 @@
+# gosec configuration for TAGtastic
+# See: https://github.com/securego/gosec#configuration
+
+# Global settings
+global:
+  nosec: false
+  show-ignored: false
+  audit: false
+
+# Rules to exclude (none - we'll use inline #nosec comments instead)
+excludes: []
+
+# Severity thresholds
+severity:
+  default: medium
+  rules: {}
+
+# Confidence thresholds
+confidence:
+  default: medium
+  rules: {}

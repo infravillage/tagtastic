@@ -728,6 +728,7 @@ func createTag(version, codename string) error {
 		return errors.New("git repository not found")
 	}
 	message := fmt.Sprintf("v%s – %s", version, codename)
+	// #nosec G204 - version is validated as SemVer, codename from controlled data
 	cmd := exec.Command("git", "tag", "-a", "v"+version, "-m", message)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -743,6 +744,7 @@ func commitRelease(version, codename string) error {
 	}
 
 	message := fmt.Sprintf("chore: prepare release v%s (%s)", version, codename)
+	// #nosec G204 - version is validated as SemVer, codename from controlled data
 	commitCmd := exec.Command("git", "commit", "-m", message)
 	commitCmd.Stdout = os.Stdout
 	commitCmd.Stderr = os.Stderr

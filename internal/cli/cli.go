@@ -107,6 +107,7 @@ func (cmd GenerateCmd) Run() error {
 		seed = time.Now().UnixNano()
 	}
 
+	// #nosec G404 - math/rand is sufficient for non-cryptographic codename selection
 	picker := rand.New(rand.NewSource(seed))
 	selected := available[picker.Intn(len(available))]
 

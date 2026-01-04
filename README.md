@@ -3,283 +3,565 @@
 # TAGtastic 🏷️
 
 [![Release](https://img.shields.io/github/actions/workflow/status/infravillage/tagtastic/release.yml?label=release&logo=githubactions&logoColor=white)](https://github.com/infravillage/tagtastic/actions/workflows/release.yml)
-[![Go Version](https://img.shields.io/badge/go-1.25.5-00ADD8?logo=go&logoColor=white)](https://go.dev/doc/devel/release)
+[![CI](https://img.shields.io/github/actions/workflow/status/infravillage/tagtastic/ci.yml?label=ci&logo=githubactions&logoColor=white)](https://github.com/infravillage/tagtastic/actions/workflows/ci.yml)
+[![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](https://go.dev/doc/devel/release)
 [![Go Report Card](https://goreportcard.com/badge/github.com/infravillage/tagtastic)](https://goreportcard.com/report/github.com/infravillage/tagtastic)
 [![License](https://img.shields.io/github/license/infravillage/tagtastic?color=2C3E50)](LICENSE)
 
-TAGtastic is a lightweight CLI for generating human-readable release codenames.
+TAGtastic is a deterministic release codename generator designed for CI/CD pipelines and release automation workflows.
 
-It is designed for release automation, CI/CD pipelines, and teams that want
-consistent naming with a clear audit trail. The project follows Semantic
-Versioning, Keep a Changelog, and GoReleaser.
+Engineered for DevOps teams and release engineers who require:
 
-TAGtastic focuses on *naming*, not release orchestration.
+- **Deterministic codename generation** with reproducible output
+- **CI/CD integration** via machine-readable formats (JSON, shell exports)
+- **Audit trail** through configuration versioning and changelog integration
+- **Zero external dependencies** for air-gapped or restricted environments
 
----
+TAGtastic follows Semantic Versioning, Keep a Changelog, and integrates with GoReleaser.
 
-## What TAGtastic Does
+## Overview
 
-TAGtastic generates deterministic, human-readable codenames that can be
-associated with SemVer tags.
+TAGtastic generates human-readable codenames that complement version tags in release workflows. Each codename is deterministic (based on seed) and can be associated with SemVer tags for improved release communication.
 
-Example use cases:
-- assigning a memorable codename to a release
-- improving release communication
-- providing a stable, human-friendly identifier alongside version numbers
+**Use cases:**
 
----
+- Assign memorable identifiers to releases in CI/CD pipelines
+- Generate codenames for internal builds, staging environments, or customer-facing releases
+- Maintain consistent naming conventions across distributed teams
+- Integrate with GoReleaser, GitHub Actions, GitLab CI, and other automation tools
 
-## Example Usage
+**Design philosophy:**
+
+- **Single responsibility:** Codename generation only (not release orchestration)
+- **Deterministic output:** Same seed produces same codename
+- **Configuration as code:** Version-controlled `.tagtastic.yaml` for reproducibility
+- **CI-first:** JSON errors, quiet mode, shell exports for automation
+
+## Installation
+
+### Pre-built Binaries
+
+Download the latest release from [GitHub Releases](https://github.com/infravillage/tagtastic/releases):
 
 ```bash
-$ tagtastic generate --theme crayola_colors --seed 1
-Almond
+# Linux (amd64)
+curl -LO https://github.com/infravillage/tagtastic/releases/latest/download/tagtastic_linux_amd64.tar.gz
+tar -xzf tagtastic_linux_amd64.tar.gz
+sudo mv tagtastic /usr/local/bin/
 
-$ tagtastic generate --theme birds --exclude albatross
-Blue Heron
+# macOS (arm64)
+curl -LO https://github.com/infravillage/tagtastic/releases/latest/download/tagtastic_darwin_arm64.tar.gz
+tar -xzf tagtastic_darwin_arm64.tar.gz
+sudo mv tagtastic /usr/local/bin/
+```
 
-$ tagtastic list --theme birds
-Albatross
-Blue Heron
-Crane
-Dove
-Eagle
+### Go Install
 
-$ tagtastic themes
-birds
-cities
-crayola_colors
-landmarks
+```bash
+go install github.com/infravillage/tagtastic/cmd/tagtastic@latest
+```
 
-$ tagtastic validate "Almond" --theme crayola_colors
-Found in theme 'crayola_colors'
+### Build from Source
 
-$ tagtastic generate --theme birds --seed 2 --format shell
+```bash
+git clone https://github.com/infravillage/tagtastic.git
+cd tagtastic/tagtastic-repo
+make build
+# Binary available at: ./bin/tagtastic
+```
+
+### Docker
+
+```bash
+docker run --rm ghcr.io/infravillage/tagtastic:latest generate --theme crayola_colors
+```
+
+## Quick Start
+
+```bash
+# Generate a codename (random seed from timestamp)
+tagtastic generate
+
+# Generate with deterministic seed
+tagtastic generate --theme crayola_colors --seed 42
+
+# List available themes
+tagtastic themes
+
+# Export for shell scripts
+tagtastic generate --format shell --quiet
+# Output: RELEASE_CODENAME=atomic-tangerine
+
+# JSON output for parsing
+tagtastic generate --format json
+# Output: {"name":"Atomic Tangerine","theme":"crayola_colors"}
+```
+
+## Available Commands
+
+| Command        | Description                         | Example                                              |
+| -------------- | ----------------------------------- | ---------------------------------------------------- |
+| `generate`     | Generate a codename from a theme    | `tagtastic generate --theme birds --seed 1`          |
+| `list`         | List all codenames in a theme       | `tagtastic list --theme crayola_colors`              |
+| `themes`       | List available themes               | `tagtastic themes`                                   |
+| `validate`     | Validate a codename against a theme | `tagtastic validate "Almond" --theme crayola_colors` |
+| `config init`  | Initialize repository configuration | `tagtastic config init`                              |
+| `config show`  | Display current configuration       | `tagtastic config show`                              |
+| `config reset` | Reset configuration to defaults     | `tagtastic config reset`                             |
+| `version`      | Show version information            | `tagtastic version`                                  |
+
+### Command Options
+
+**Global flags:**
+
+- `--quiet, -q`: Suppress non-essential output (ideal for CI)
+- `--json-errors`: Emit errors in JSON format for machine parsing
+- `--config-path <path>`: Override default config file location
+
+**Generate command:**
+
+- `--theme, -t <theme>`: Theme to use (default: `crayola_colors`)
+- `--seed, -s <int>`: Random seed (0 uses current timestamp)
+- `--exclude, -e <items>`: Comma-separated items to exclude
+- `--format, -f <format>`: Output format (`text`, `json`, `shell`)
+- `--record`: Write selected codename to `.tagtastic.yaml`
+
+**Shell format output:**
+
+```bash
 RELEASE_CODENAME=blue-heron
 ```
 
-Note: shell/CI output uses the first alias for a codename (slug style), so
-multi-word names become dash-separated when using the `shell` format.
+## Configuration
 
-CI/automation options:
-- `--quiet` suppresses non-essential output.
-- `--json-errors` emits machine-readable error output.
-- `config init/reset --dry-run` previews changes without writing.
-- `--config-path <path>` overrides the config file location.
-- `generate --record` writes the selected codename to the repo config.
+TAGtastic loads configuration in the following precedence order:
 
----
+1. `--config-path <path>` command-line flag
+2. `TAGTASTIC_CONFIG` environment variable
+3. `./.tagtastic.yaml` (repository-local configuration)
 
-## Similar Tools
+### Repository Configuration
 
-TAGtastic complements existing release tooling such as GoReleaser.
+Repository configuration (`.tagtastic.yaml`) is optional and recommended for release automation:
 
-It does not replace release automation or versioning systems. Instead, it
-fits into the same workflow by providing a stable, human-readable codename
-for each SemVer tag.
-
----
-
-## Project Status
-
-* Current focus: stabilizing the v1 specification
-* Release phases: alpha → beta → stable
-
-Scope expansion is intentional and conservative.
-
----
-
-## Repository Layout
-
-* `cmd/tagtastic/` — CLI entrypoint
-* `internal/` — application logic
-* `data/` — local datasets used by the CLI
-
----
-
-## Code Quality (Go Report Card)
-Go Report Card runs on the hosted service, but you can validate locally using the CLI:
-
-```bash
-go install github.com/gojp/goreportcard/cmd/goreportcard-cli@latest
-goreportcard-cli
+```yaml
+# .tagtastic.yaml
+0.1.0-beta.1: Almond
+0.1.0-beta.2: Apricot
+0.1.1-beta.1: Aquamarine
 ```
 
-The badge above links to the hosted report for this repo.
+**Configuration behavior:**
 
-Local quality checks (modern tooling):
+- Never auto-created (explicit opt-in via `generate --record` or release helper)
+- Version-controlled for audit trail and reproducibility
+- Used by CI/CD workflows to ensure consistent codenames across environments
+
+### Initialize Configuration
+
 ```bash
-make quality
+# Preview without writing
+tagtastic config init --dry-run
+
+# Create .tagtastic.yaml
+tagtastic config init
+
+# Override location
+tagtastic config init --config-path /path/to/.tagtastic.yaml
 ```
 
----
+## CI/CD Integration
 
-## Release Naming (Crayola Colors)
-Each release uses a codename from the Crayola color list in the Corpora repo:
-https://github.com/dariusk/corpora/blob/master/data/colors/crayola.json
+### GitHub Actions
 
-Rules:
-- Names are assigned in alphabetical order for each release.
-- The codename is recorded in `CHANGELOG.md` and the GitHub Release title.
-- SemVer tags remain the source of truth (e.g., `v1.0.0-beta.1`).
+```yaml
+name: Release
 
-Data and tooling:
-- `data/crayola.json` is the raw source snapshot.
-- `data/themes.yaml` contains the structured theme data used by the CLI.
-- `internal/data/themes.yaml` is the embedded copy (sync with `go run ./cmd/tools/sync-themes`).
-- `go run ./cmd/tools/next-codename` prints the next available codename based on `CHANGELOG.md`.
+on:
+  push:
+    tags:
+      - 'v*'
 
----
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-## Config Precedence
-TAGtastic loads config in this order:
-1) `--config-path <path>`
-2) `TAGTASTIC_CONFIG` environment variable
-3) `./.tagtastic.yaml` (repo-local, preferred)
+      - name: Install TAGtastic
+        run: |
+          curl -LO https://github.com/infravillage/tagtastic/releases/latest/download/tagtastic_linux_amd64.tar.gz
+          tar -xzf tagtastic_linux_amd64.tar.gz
+          sudo mv tagtastic /usr/local/bin/
 
-Repo config is optional and created when you use `generate --record` or the release helper.
+      - name: Generate Codename
+        id: codename
+        run: |
+          CODENAME=$(tagtastic generate --theme crayola_colors --format shell --quiet | cut -d= -f2)
+          echo "codename=${CODENAME}" >> $GITHUB_OUTPUT
 
-Rules:
-- Config is never auto-created unless you explicitly record or run the release helper.
-- `generate --record` writes the selected codename to `.tagtastic.yaml`.
-- Release helper writes the codename for the version it tags.
-
----
-
-## GoReleaser + Codename Flow
-GoReleaser does not generate codenames by itself. TAGtastic provides the codename and passes it into GoReleaser via `RELEASE_CODENAME`.
-
-Recommended flow:
-1) Quick path (release helper, optional and CI-friendly):
-   - `go run ./cmd/tools/release 0.1.0-alpha.2 --commit`
-   - This auto-selects the next codename, updates `CHANGELOG.md`/`VERSION`, and creates the annotated tag.
-   - The helper validates SemVer and refuses downgrades or reuse of older versions.
-2) Manual path (TAGtastic + git):
-   - `CODENAME=$(make codename -s)`
-   - Update `CHANGELOG.md` and `VERSION`
-   - `git tag -a vX.Y.Z[-alpha.N] -m "vX.Y.Z – ${CODENAME}"`
-3) Push the tag:
-   - `git push origin vX.Y.Z[-alpha.N]`
-4) GitHub Actions runs GoReleaser and publishes the release.
-
-## Real-World Use Cases
-Release tag with codename (manual path):
-```bash
-CODENAME=$(make codename -s)
-git tag -a v0.1.0-beta.2 -m "v0.1.0-beta.2 – ${CODENAME}"
-git push origin v0.1.0-beta.2
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ github.ref_name }} – ${{ steps.codename.outputs.codename }}
+          body: |
+            Release ${{ github.ref_name }} (Codename: **${{ steps.codename.outputs.codename }}**)
 ```
 
-Release helper (short path):
+### GitLab CI
+
+```yaml
+release:
+  stage: deploy
+  image: golang:1.25
+  script:
+    - go install github.com/infravillage/tagtastic/cmd/tagtastic@latest
+    - export CODENAME=$(tagtastic generate --format shell --quiet | cut -d= -f2)
+    - echo "Release codename: $CODENAME"
+    - echo "RELEASE_CODENAME=$CODENAME" >> release.env
+  artifacts:
+    reports:
+      dotenv: release.env
+  only:
+    - tags
+```
+
+### Jenkins Pipeline
+
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Generate Codename') {
+            steps {
+                script {
+                    sh 'curl -LO https://github.com/infravillage/tagtastic/releases/latest/download/tagtastic_linux_amd64.tar.gz'
+                    sh 'tar -xzf tagtastic_linux_amd64.tar.gz'
+                    env.RELEASE_CODENAME = sh(
+                        script: './tagtastic generate --format shell --quiet | cut -d= -f2',
+                        returnStdout: true
+                    ).trim()
+                    echo "Release codename: ${env.RELEASE_CODENAME}"
+                }
+            }
+        }
+    }
+}
+```
+
+### Docker Build Arguments
+
+```dockerfile
+ARG RELEASE_CODENAME=unknown
+LABEL codename="${RELEASE_CODENAME}"
+LABEL version="${VERSION}"
+```
+
 ```bash
+CODENAME=$(tagtastic generate --quiet)
+docker build --build-arg RELEASE_CODENAME="$CODENAME" -t myapp:v1.0.0 .
+```
+
+## Release Automation
+
+### Release Integration
+
+TAGtastic integrates with GoReleaser and provides a release helper (`cmd/tools/release`) to automate version management, changelog updates, and git tagging.
+
+**Codename lookup priority (in CI/CD):**
+
+1. Git tag annotation (preferred)
+2. `.tagtastic.yaml` entry for the version
+3. `CHANGELOG.md` entry for the version
+
+### Release Workflow
+
+#### Option 1: Automated (Recommended for CI/CD)
+
+```bash
+# Release helper auto-selects next codename, updates files, creates tag
 go run ./cmd/tools/release 0.1.0-beta.2 --commit
 git push origin v0.1.0-beta.2
 ```
 
-Release helper (auto-bump patch):
+#### Option 2: Manual
+
 ```bash
+# Select next codename
+CODENAME=$(make codename -s)
+
+# Update CHANGELOG.md and VERSION manually
+vim CHANGELOG.md VERSION
+
+# Create annotated tag with codename
+git tag -a v0.1.0-beta.2 -m "v0.1.0-beta.2 – ${CODENAME}"
+git push origin v0.1.0-beta.2
+```
+
+### Release Helper Tool
+
+The release helper (`cmd/tools/release`) provides:
+
+- **SemVer validation:** Refuses downgrades or version reuse
+- **Atomic updates:** `CHANGELOG.md`, `VERSION`, `.tagtastic.yaml` updated together
+- **Auto-bump:** `--bump patch|minor|major` for version increments
+- **Prerelease support:** `--pre alpha|beta|rc` with optional `--pre-num N`
+- **Dry-run mode:** Preview changes without modifying files
+
+**Examples:**
+
+```bash
+# Basic release (dry-run by default without --commit)
+go run ./cmd/tools/release 0.1.0-beta.2
+
+# Commit changes and create tag
+go run ./cmd/tools/release 0.1.0-beta.2 --commit
+
+# Auto-bump patch version
 go run ./cmd/tools/release --bump patch --commit
-git push origin v0.1.0-beta.3
+
+# Create prerelease
+go run ./cmd/tools/release 0.2.0 --pre beta --commit
+
+# Custom codename override
+go run ./cmd/tools/release 0.1.0-beta.2 --codename "Custom Name" --commit
+
+# CI/CD mode (quiet, JSON errors)
+go run ./cmd/tools/release --bump patch --commit --quiet --json-errors
 ```
 
-Release helper (pre-release):
+**Makefile shortcuts:**
+
 ```bash
-go run ./cmd/tools/release 0.1.1 --pre beta --commit
-git push origin v0.1.1-beta.1
-```
+# Prepare release with specific version
+make release-prep VERSION=0.1.0-beta.2
 
-Record a codename for CI workflows without tagging:
-```bash
-tagtastic generate --theme crayola_colors --record
-```
-
-Custom codename override (when you need a manual choice):
-```bash
-go run ./cmd/tools/release 0.1.0-beta.2 --codename \"Custom Name\"
-```
-
-## Automating CHANGELOG.md and VERSION
-GoReleaser does not auto-edit `CHANGELOG.md` or `VERSION`. You can automate this in CI or locally by adding a small script (Go or shell) that:
-- Reads the next codename (`make codename`)
-- Updates the latest `CHANGELOG.md` section
-- Writes the new `VERSION`
-
-TAGtastic includes a dedicated release helper at `cmd/tools/release` that performs these steps and creates an annotated git tag.
-
-Example (local, auto-picks codename):
-```bash
-go run ./cmd/tools/release 0.1.0-alpha.2
-```
-
-Example (with commit):
-```bash
-go run ./cmd/tools/release 0.1.0-alpha.2 --commit
-```
-
-Example (dry run):
-```bash
-go run ./cmd/tools/release 0.1.0-alpha.2 --dry-run
-```
-
-Example (auto-bump minor):
-```bash
-go run ./cmd/tools/release --bump minor
-```
-
-CI/automation options:
-- `--quiet` suppresses non-essential output.
-- `--json-errors` emits machine-readable error output.
-- `--config <path>` overrides the repo config location.
-- `--no-config-update` skips writing `.tagtastic.yaml`.
-- `--pre <alpha|beta|rc>` appends a prerelease label.
-- `--pre-num N` sets a prerelease number (defaults to next available).
-
-CI guidance:
-- Prefer the release helper in CI to keep SemVer monotonic and reproducible.
-- Use `--bump` when you want CI to compute the next version; the helper will fail if the new version would go backward.
-
-Makefile shortcut:
-```bash
-make release-prep VERSION=0.1.0-alpha.2
-```
-
-Makefile auto-bump:
-```bash
+# Auto-bump version
 make release-bump BUMP=patch
+
+# Prerelease with auto-bump
+make release-bump BUMP=minor PRE=beta
 ```
 
----
+### GoReleaser Integration
 
-## Release Checklist (Appendix)
-- Confirm tests pass: `go test ./...`
-- Run `make codename` to select the next Crayola color via TAGtastic.
-- Run the release helper to update `CHANGELOG.md`, `VERSION`, and create the tag.
-- Tag the release with SemVer (`vX.Y.Z[-alpha.N]`) and the TAGtastic codename.
-- Ensure GitHub Actions runs GoReleaser and publishes the release.
-- Use GoReleaser for all release binaries (no manual packaging).
+TAGtastic codenames are injected into GoReleaser via environment variables:
 
----
+```yaml
+# .goreleaser.yaml
+release:
+  name_template: "v{{ .Version }} – {{ .Env.RELEASE_CODENAME }}"
 
-## Scope Note
+archives:
+  - name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Env.RELEASE_CODENAME_SLUG }}_{{ .Os }}_{{ .Arch }}"
+```
 
-TAGtastic is a standalone utility.
+**GitHub Actions workflow:** See [`.github/workflows/release.yml`](.github/workflows/release.yml) for codename extraction logic.
 
-It is not part of any core product, engine, or proprietary system and is
-developed independently as a general-purpose tool.
+### Release Naming Convention
 
----
+This project uses **Crayola colors** from the [Corpora repository](https://github.com/dariusk/corpora/blob/master/data/colors/crayola.json) as release codenames.
 
-## Changelog
-`CHANGELOG.md` follows Keep a Changelog and Semantic Versioning.
+**Rules:**
 
----
+- Codenames assigned in **alphabetical order** per release
+- Recorded in `CHANGELOG.md`, `.tagtastic.yaml`, and git tag annotations
+- SemVer tags remain the source of truth (`v1.0.0-beta.1`)
+
+**Example changelog entry:**
+
+```markdown
+## [0.1.0-beta.1] – "Almond" – 2026-01-03
+```
+
+**Data sources:**
+
+- `data/crayola.json`: Raw Corpora snapshot
+- `data/themes.yaml`: Structured theme data
+- `internal/data/themes.yaml`: Embedded copy (sync with `make sync-themes`)
+
+**Next codename:**
+```bash
+make codename
+# or
+go run ./cmd/tools/next-codename
+```
+
+## Themes
+
+TAGtastic includes multiple codename themes:
+
+- `crayola_colors` — Crayola crayon colors (default)
+- `birds` — Bird species
+- `cities` — World cities
+- `landmarks` — Famous landmarks
+- And more (run `tagtastic themes` to see all)
+
+### Custom Themes
+
+Edit `data/themes.yaml` to add custom themes:
+
+```yaml
+themes:
+  your_theme:
+    id: your_theme
+    name: "Your Theme Name"
+    description: "Theme description"
+    category: "Category"
+    items:
+      - name: "Item One"
+        aliases: ["item-one"]
+        description: "Description"
+```
+
+After editing, sync the embedded copy:
+
+```bash
+make sync-themes
+# or
+go run ./cmd/tools/sync-themes
+```
+
+## Development
+
+### Repository Structure
+
+```text
+tagtastic-repo/
+├── cmd/
+│   ├── tagtastic/          # CLI entrypoint
+│   └── tools/              # Release helper, codename generator, theme sync
+├── internal/
+│   ├── cli/                # Command implementations
+│   ├── config/             # Configuration handling
+│   ├── data/               # Theme repository and types
+│   └── output/             # Output formatters (text, JSON, shell)
+├── data/
+│   ├── themes.yaml         # Theme definitions (source)
+│   └── crayola.json        # Crayola colors raw data
+├── .github/workflows/      # CI/CD automation
+├── .goreleaser.yaml        # GoReleaser configuration
+├── Makefile                # Build and development tasks
+└── CHANGELOG.md            # Release history
+```
+
+### Build and Test
+
+```bash
+# Build local binary
+make build
+
+# Run tests with race detection and coverage
+make test
+
+# Run linter
+make lint
+
+# Format code
+make fmt
+
+# Run all quality checks
+make quality
+
+# Build release artifacts (GoReleaser)
+make release
+```
+
+### Code Quality
+
+**Local validation:**
+```bash
+# Run golangci-lint, gofmt, go vet
+make quality
+
+# Go Report Card (local)
+go install github.com/gojp/goreportcard/cmd/goreportcard-cli@latest
+goreportcard-cli
+```
+
+**CI/CD:** See [Go Report Card badge](https://goreportcard.com/report/github.com/infravillage/tagtastic) for hosted analysis.
+
+### Testing
+
+```bash
+# Run all tests
+go test ./...
+
+# Run specific test
+go test -v ./internal/cli -run TestGenerateCmd
+
+# Run tests with race detection
+go test -race ./...
+
+# Generate coverage report
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out
+```
+
+## Contributing
+
+Contributions are welcome. Please review [CONTRIBUTING.md](CONTRIBUTING.md) for:
+
+- Development standards and coding style
+- Testing requirements (≥80% coverage)
+- Commit message conventions (Conventional Commits)
+- Pull request guidelines
+
+**Quick guidelines:**
+
+- Use `gofmt -s` and `goimports` for formatting
+- Run `make test` and `make lint` before submitting PRs
+- Follow [Keep a Changelog](https://keepachangelog.com/) for `CHANGELOG.md` updates
+- Use Conventional Commits: `feat(cli):`, `fix(data):`, `docs:`
+
+## Project Status
+
+- **Current focus:** Stabilizing v1 specification
+- **Release phases:** alpha → beta → stable
+- **Versioning:** Semantic Versioning 2.0.0
+- **Changelog:** Keep a Changelog 1.0.0
+
+Scope expansion is intentional and conservative. Feature requests and architectural changes are evaluated against the core mission: deterministic codename generation for release automation.
+
+## Security
+
+### Reporting Security Issues
+
+**Do not report security vulnerabilities through public GitHub issues.**
+
+If you discover a security vulnerability in TAGtastic, please report it privately:
+
+1. **Email:** Send details to `security@infravillage.com` (or create a private security advisory via GitHub)
+2. **Include:** Detailed description, steps to reproduce, potential impact, and suggested fix (if available)
+3. **Response time:** We aim to acknowledge reports within 48 hours
+
+### Security Considerations
+
+TAGtastic is designed for use in CI/CD pipelines. Consider these security practices:
+
+- **Configuration files:** Never commit sensitive data to `.tagtastic.yaml` (it only stores codenames)
+- **Supply chain:** Verify release checksums and use pinned versions in production
+- **Air-gapped environments:** TAGtastic has zero external dependencies and can run offline
+- **Least privilege:** Run with minimal permissions required for file I/O
+- **Input validation:** All theme data is embedded at build time; no remote data fetching
+- **Security scanning:** This project is scanned with [gosec](https://github.com/securego/gosec) on every PR and commit
+
+### Supported Versions
+
+| Version | Supported          |
+| ------- | ------------------ |
+| 0.1.x   | :white_check_mark: |
+| < 0.1   | :x:                |
+
+Security patches are applied to the latest minor version. Once v1.0.0 is released, we will maintain the latest stable major version.
 
 ## License
-MIT. See `LICENSE`.
 
----
+MIT License. See [LICENSE](LICENSE) for details.
 
 ## Credits
-- CLI parsing: Kong (https://github.com/alecthomas/kong)
-- Release automation: GoReleaser (https://goreleaser.com/)
-- Codename themes data: Corpora by Darius Kazemi (https://github.com/dariusk/corpora)
+
+- **CLI Framework:** [Kong](https://github.com/alecthomas/kong) by Alec Thomas
+- **Release Automation:** [GoReleaser](https://goreleaser.com/)
+- **Codename Data:** [Corpora](https://github.com/dariusk/corpora) by Darius Kazemi
