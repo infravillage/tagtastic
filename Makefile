@@ -1,6 +1,6 @@
 APP_NAME=tagtastic
 
-.PHONY: help build test lint fmt clean release codename sync-themes release-prep quality
+.PHONY: help build test lint fmt clean release codename sync-themes release-prep release-bump quality
 
 help:
 	@echo "Targets:"
@@ -13,6 +13,7 @@ help:
 	@echo "  make codename - Print the next available release codename"
 	@echo "  make sync-themes - Sync data/themes.yaml into internal/data/themes.yaml"
 	@echo "  make release-prep VERSION=x.y.z - Prepare CHANGELOG, VERSION, and tag"
+	@echo "  make release-bump BUMP=patch - Prepare next SemVer bump and tag"
 	@echo "  make quality - Run gofmt, go vet, and golangci-lint"
 
 build:
@@ -41,7 +42,10 @@ sync-themes:
 	go run ./cmd/tools/sync-themes
 
 release-prep:
-	go run ./cmd/tools/release --version $(VERSION)
+	go run ./cmd/tools/release $(VERSION)
+
+release-bump:
+	go run ./cmd/tools/release --bump $(BUMP)
 
 quality:
 	gofmt -w ./

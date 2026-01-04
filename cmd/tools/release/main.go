@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -54,6 +55,7 @@ func main() {
 	fs.BoolVar(help, "h", false, "Show help (shorthand)")
 	codename := fs.String("codename", "", "Optional codename override")
 	date := fs.String("date", "", "Release date (YYYY-MM-DD), defaults to today")
+	bump := fs.String("bump", "", "Auto-bump version (major, minor, patch)")
 	commit := fs.Bool("commit", false, "Commit CHANGELOG.md and VERSION updates")
 	quiet := fs.Bool("quiet", false, "Suppress non-essential output")
 	fs.BoolVar(quiet, "q", false, "Suppress non-essential output (shorthand)")
@@ -72,6 +74,7 @@ func main() {
 		fmt.Fprintln(os.Stdout)
 		fmt.Fprintln(os.Stdout, "Usage:")
 		fmt.Fprintln(os.Stdout, "  release <version> [--codename NAME] [--date YYYY-MM-DD] [--commit]")
+		fmt.Fprintln(os.Stdout, "  release --bump <major|minor|patch> [--codename NAME] [--date YYYY-MM-DD] [--commit]")
 		fmt.Fprintln(os.Stdout)
 		fmt.Fprintln(os.Stdout, "Flags:")
 		fs.SetOutput(os.Stdout)
@@ -90,23 +93,48 @@ func main() {
 		os.Exit(0)
 	}
 
-	if fs.NArg() == 0 {
-		reportError(errors.New("version is required"), 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+	if fs.NArg() == 0 && strings.TrimSpace(*bump) == "" {
+		reportError(errors.New("version is required (or use --bump)"), 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+	}
+	if fs.NArg() > 0 && strings.TrimSpace(*bump) != "" {
+		reportError(errors.New("use either a version argument or --bump, not both"), 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
 	}
 
-	version := strings.TrimSpace(fs.Arg(0))
-	if version == "" {
-		reportError(errors.New("version is required"), 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
-	}
-
-	resolvedDate := strings.TrimSpace(*date)
-	if resolvedDate == "" {
-		resolvedDate = time.Now().Format("2006-01-02")
+	var version string
+	if fs.NArg() > 0 {
+		version = strings.TrimSpace(fs.Arg(0))
+		if version == "" {
+			reportError(errors.New("version is required"), 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+		}
 	}
 
 	root, err := os.Getwd()
 	if err != nil {
 		reportError(err, 1, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+	}
+
+	latestVersion, err := latestVersion(root)
+	if err != nil {
+		reportError(err, 1, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+	}
+
+	if strings.TrimSpace(*bump) != "" {
+		if latestVersion == "" {
+			reportError(errors.New("unable to auto-bump version: no existing version tags or VERSION file found"), 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+		}
+		version, err = bumpVersion(latestVersion, strings.TrimSpace(*bump))
+		if err != nil {
+			reportError(err, 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+		}
+	} else {
+		if err := ensureSemVerForward(version, latestVersion); err != nil {
+			reportError(err, 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+		}
+	}
+
+	resolvedDate := strings.TrimSpace(*date)
+	if resolvedDate == "" {
+		resolvedDate = time.Now().Format("2006-01-02")
 	}
 
 	resolvedCodename := strings.TrimSpace(*codename)
@@ -348,6 +376,244 @@ func extractVersion(line string) string {
 	return line[start+1 : end]
 }
 
+type semVer struct {
+	major    int
+	minor    int
+	patch    int
+	pre      string
+	preLabel string
+	preNum   int
+	hasPre   bool
+}
+
+var semVerPattern = regexp.MustCompile(`^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$`)
+
+func parseSemVer(input string) (semVer, error) {
+	match := semVerPattern.FindStringSubmatch(strings.TrimSpace(input))
+	if match == nil {
+		return semVer{}, fmt.Errorf("invalid SemVer: %s", input)
+	}
+
+	major, err := strconv.Atoi(match[1])
+	if err != nil {
+		return semVer{}, err
+	}
+	minor, err := strconv.Atoi(match[2])
+	if err != nil {
+		return semVer{}, err
+	}
+	patch, err := strconv.Atoi(match[3])
+	if err != nil {
+		return semVer{}, err
+	}
+
+	version := semVer{major: major, minor: minor, patch: patch}
+	if match[4] != "" {
+		version.hasPre = true
+		version.pre = match[4]
+		label, num := splitPreRelease(match[4])
+		version.preLabel = label
+		version.preNum = num
+	}
+
+	return version, nil
+}
+
+func splitPreRelease(value string) (string, int) {
+	parts := strings.Split(value, ".")
+	if len(parts) == 1 {
+		return value, 0
+	}
+	last := parts[len(parts)-1]
+	num, err := strconv.Atoi(last)
+	if err != nil {
+		return value, 0
+	}
+	label := strings.Join(parts[:len(parts)-1], ".")
+	if label == "" {
+		label = value
+	}
+	return label, num
+}
+
+func compareSemVer(a, b semVer) int {
+	if a.major != b.major {
+		return compareInt(a.major, b.major)
+	}
+	if a.minor != b.minor {
+		return compareInt(a.minor, b.minor)
+	}
+	if a.patch != b.patch {
+		return compareInt(a.patch, b.patch)
+	}
+	if !a.hasPre && !b.hasPre {
+		return 0
+	}
+	if !a.hasPre {
+		return 1
+	}
+	if !b.hasPre {
+		return -1
+	}
+
+	rankA := preReleaseRank(a.preLabel)
+	rankB := preReleaseRank(b.preLabel)
+	if rankA != rankB {
+		return compareInt(rankA, rankB)
+	}
+
+	if a.preLabel != b.preLabel {
+		if a.preLabel < b.preLabel {
+			return -1
+		}
+		if a.preLabel > b.preLabel {
+			return 1
+		}
+	}
+
+	if a.preNum != b.preNum {
+		return compareInt(a.preNum, b.preNum)
+	}
+	return 0
+}
+
+func compareInt(a, b int) int {
+	switch {
+	case a < b:
+		return -1
+	case a > b:
+		return 1
+	default:
+		return 0
+	}
+}
+
+func preReleaseRank(label string) int {
+	switch strings.ToLower(label) {
+	case "alpha":
+		return 0
+	case "beta":
+		return 1
+	case "rc":
+		return 2
+	default:
+		return 3
+	}
+}
+
+func formatSemVer(version semVer) string {
+	base := fmt.Sprintf("%d.%d.%d", version.major, version.minor, version.patch)
+	if version.hasPre && version.pre != "" {
+		return base + "-" + version.pre
+	}
+	return base
+}
+
+func ensureSemVerForward(version, latest string) error {
+	if strings.TrimSpace(version) == "" {
+		return errors.New("version is required")
+	}
+	parsed, err := parseSemVer(version)
+	if err != nil {
+		return err
+	}
+	if strings.TrimSpace(latest) == "" {
+		return nil
+	}
+	parsedLatest, err := parseSemVer(latest)
+	if err != nil {
+		return fmt.Errorf("invalid latest version %s: %w", latest, err)
+	}
+	if compareSemVer(parsed, parsedLatest) <= 0 {
+		return fmt.Errorf("version must be greater than %s", formatSemVer(parsedLatest))
+	}
+	return nil
+}
+
+func bumpVersion(base, bump string) (string, error) {
+	parsed, err := parseSemVer(base)
+	if err != nil {
+		return "", err
+	}
+	switch strings.ToLower(bump) {
+	case "major":
+		parsed.major++
+		parsed.minor = 0
+		parsed.patch = 0
+	case "minor":
+		parsed.minor++
+		parsed.patch = 0
+	case "patch":
+		parsed.patch++
+	default:
+		return "", fmt.Errorf("invalid bump value: %s (expected major, minor, or patch)", bump)
+	}
+	parsed.hasPre = false
+	parsed.pre = ""
+	parsed.preLabel = ""
+	parsed.preNum = 0
+	return formatSemVer(parsed), nil
+}
+
+func latestVersion(root string) (string, error) {
+	latestTag, err := latestTagVersion()
+	if err != nil {
+		return "", err
+	}
+	if latestTag != "" {
+		return latestTag, nil
+	}
+
+	payload, err := os.ReadFile(filepath.Join(root, "VERSION"))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", nil
+		}
+		return "", err
+	}
+
+	version := strings.TrimSpace(string(payload))
+	if version == "" {
+		return "", nil
+	}
+	if _, err := parseSemVer(version); err != nil {
+		return "", fmt.Errorf("invalid VERSION file: %w", err)
+	}
+	return version, nil
+}
+
+func latestTagVersion() (string, error) {
+	if _, err := os.Stat(".git"); err != nil {
+		return "", nil
+	}
+	cmd := exec.Command("git", "tag", "-l", "v*")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+
+	var latest semVer
+	found := false
+	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		parsed, err := parseSemVer(strings.TrimSpace(line))
+		if err != nil {
+			continue
+		}
+		if !found || compareSemVer(parsed, latest) > 0 {
+			latest = parsed
+			found = true
+		}
+	}
+
+	if !found {
+		return "", nil
+	}
+	return formatSemVer(latest), nil
+}
+
 func createTag(version, codename string) error {
 	if _, err := os.Stat(".git"); err != nil {
 		return errors.New("git repository not found")
@@ -403,6 +669,7 @@ func reorderArgs(args []string) []string {
 	}
 
 	valueFlags := map[string]struct{}{
+		"--bump":     {},
 		"--codename": {},
 		"--date":     {},
 		"--config":   {},

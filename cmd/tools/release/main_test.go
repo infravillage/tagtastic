@@ -45,3 +45,22 @@ func TestResolveConfigPathOverride(t *testing.T) {
 		t.Fatalf("expected override path, got %q", path)
 	}
 }
+
+func TestEnsureSemVerForward(t *testing.T) {
+	if err := ensureSemVerForward("0.1.1", "0.1.0"); err != nil {
+		t.Fatalf("expected forward version, got error: %v", err)
+	}
+	if err := ensureSemVerForward("0.1.0", "0.1.0"); err == nil {
+		t.Fatalf("expected error for non-forward version")
+	}
+}
+
+func TestBumpVersion(t *testing.T) {
+	version, err := bumpVersion("0.1.0-beta.2", "patch")
+	if err != nil {
+		t.Fatalf("bumpVersion failed: %v", err)
+	}
+	if version != "0.1.1" {
+		t.Fatalf("expected 0.1.1, got %q", version)
+	}
+}

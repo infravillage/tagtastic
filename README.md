@@ -153,6 +153,7 @@ Recommended flow:
 1) Quick path (release helper, optional and CI-friendly):
    - `go run ./cmd/tools/release 0.1.0-alpha.2 --commit`
    - This auto-selects the next codename, updates `CHANGELOG.md`/`VERSION`, and creates the annotated tag.
+   - The helper validates SemVer and refuses downgrades or reuse of older versions.
 2) Manual path (TAGtastic + git):
    - `CODENAME=$(make codename -s)`
    - Update `CHANGELOG.md` and `VERSION`
@@ -173,6 +174,12 @@ Release helper (short path):
 ```bash
 go run ./cmd/tools/release 0.1.0-beta.2 --commit
 git push origin v0.1.0-beta.2
+```
+
+Release helper (auto-bump patch):
+```bash
+go run ./cmd/tools/release --bump patch --commit
+git push origin v0.1.0-beta.3
 ```
 
 Record a codename for CI workflows without tagging:
@@ -208,6 +215,11 @@ Example (dry run):
 go run ./cmd/tools/release 0.1.0-alpha.2 --dry-run
 ```
 
+Example (auto-bump minor):
+```bash
+go run ./cmd/tools/release --bump minor
+```
+
 CI/automation options:
 - `--quiet` suppresses non-essential output.
 - `--json-errors` emits machine-readable error output.
@@ -217,6 +229,11 @@ CI/automation options:
 Makefile shortcut:
 ```bash
 make release-prep VERSION=0.1.0-alpha.2
+```
+
+Makefile auto-bump:
+```bash
+make release-bump BUMP=patch
 ```
 
 ---
