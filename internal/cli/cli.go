@@ -116,7 +116,7 @@ func (cmd GenerateCmd) Run() error {
 		return err
 	}
 
-	fmt.Fprintln(cmd.deps.Out, outputText)
+	_, _ = fmt.Fprintln(cmd.deps.Out, outputText)
 
 	if cmd.Record {
 		if err := recordCodename(cmd, selected); err != nil {
@@ -149,7 +149,7 @@ func (cmd ListCmd) Run() error {
 		return err
 	}
 
-	fmt.Fprintln(cmd.deps.Out, outputText)
+	_, _ = fmt.Fprintln(cmd.deps.Out, outputText)
 	return nil
 }
 
@@ -170,7 +170,7 @@ func (cmd ThemesCmd) Run() error {
 		return err
 	}
 
-	fmt.Fprintln(cmd.deps.Out, outputText)
+	_, _ = fmt.Fprintln(cmd.deps.Out, outputText)
 	return nil
 }
 
@@ -348,7 +348,7 @@ func (cmd VersionCmd) Run() error {
 		version.Date = "unknown"
 	}
 
-	fmt.Fprintf(cmd.deps.Out, "tagtastic %s (commit %s, built %s)\n", version.Version, version.Commit, version.Date)
+	_, _ = fmt.Fprintf(cmd.deps.Out, "tagtastic %s (commit %s, built %s)\n", version.Version, version.Commit, version.Date)
 	return nil
 }
 
