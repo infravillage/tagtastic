@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
 ## [Unreleased]
 
 ### Added
@@ -15,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - N/A
+
+## [0.2.0-beta.1] – "Asparagus" – 2026-01-04
+
+### Added
+
+- GitHub Actions CI workflow for automated quality checks on PRs and commits
+- Security scanning with gosec (runs on every PR and commit)
+- `make security` target for local security scanning
+- CI workflow badge in README.md
+- Security considerations documentation in README.md
+
+### Changed
+
+- Updated Go version requirement to 1.24.0 (required by dependencies)
+- Updated README.md with CI/CD integration examples and security scanning details
 
 ## [0.1.1-beta.1] – "Aquamarine" – 2026-01-04
 
@@ -70,6 +84,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+[Unreleased]: https://github.com/infravillage/tagtastic/compare/v0.2.0-beta.1...HEAD
+[0.2.0-beta.1]: https://github.com/infravillage/tagtastic/compare/vUnreleased...v0.2.0-beta.1
 [Unreleased]: https://github.com/infravillage/tagtastic/compare/v0.1.1-beta.1...HEAD
 [0.1.1-beta.1]: https://github.com/infravillage/tagtastic/compare/v0.1.0-beta.2...v0.1.1-beta.1
 [0.1.0-beta.2]: https://github.com/infravillage/tagtastic/compare/v0.1.0-beta.1...v0.1.0-beta.2
