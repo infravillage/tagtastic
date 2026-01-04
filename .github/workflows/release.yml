@@ -23,7 +23,15 @@ jobs:
 
       - name: Determine release codename
         run: |
-          CODENAME=$(go run ./cmd/tools/next-codename)
+          TAG_NAME="${GITHUB_REF_NAME}"
+          SUBJECT=$(git tag -l "${TAG_NAME}" --format="%(contents:subject)")
+          CODENAME="${SUBJECT#* – }"
+          if [ "${CODENAME}" = "${SUBJECT}" ]; then
+            CODENAME="${SUBJECT#*- }"
+          fi
+          if [ -z "${CODENAME}" ]; then
+            CODENAME=$(go run ./cmd/tools/next-codename)
+          fi
           echo "RELEASE_CODENAME=${CODENAME}" >> $GITHUB_ENV
           echo "Using codename: ${CODENAME}"
 
