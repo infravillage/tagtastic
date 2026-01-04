@@ -45,16 +45,22 @@ jobs:
               ;;
           esac
 
-          RAW_TAG=$(git cat-file -p "${TAG_NAME}" || true)
-          SUBJECT=""
-          if echo "${RAW_TAG}" | grep -q "^tag "; then
-            SUBJECT=$(printf "%s\n" "${RAW_TAG}" | awk 'BEGIN{found=0} /^$/{found=1; next} found{print; exit}')
-          fi
+          git fetch --tags --force
 
+          SUBJECT=$(git for-each-ref --format='%(contents)' "refs/tags/${TAG_NAME}" || true)
+          SUBJECT=$(printf "%s\n" "${SUBJECT}" | awk 'NF {print; exit}')
+
+          if [ -z "${SUBJECT}" ]; then
+            SUBJECT=$(git show "${TAG_NAME}:.tagtastic.yaml" 2>/dev/null | awk -F': ' -v key="${TAG_NAME#v}" '$1 ~ "^[[:space:]]*"key"$" {print $2}' || true)
+          fi
           if [ -z "${SUBJECT}" ] && [ -f ".tagtastic.yaml" ]; then
             SUBJECT=$(awk -F': ' -v key="${TAG_NAME#v}" '$1 ~ "^[[:space:]]*"key"$" {print $2}' .tagtastic.yaml)
           fi
 
+          if [ -z "${SUBJECT}" ]; then
+            CHANGELOG_LINE=$(git show "${TAG_NAME}:CHANGELOG.md" 2>/dev/null | awk -v ver="${TAG_NAME#v}" '$0 ~ "^## \\["ver"\\]" {print; exit}' || true)
+            SUBJECT=$(printf "%s\n" "${CHANGELOG_LINE}" | awk -F'\"' '{print $2}')
+          fi
           if [ -z "${SUBJECT}" ] && [ -f "CHANGELOG.md" ]; then
             CHANGELOG_LINE=$(awk -v ver="${TAG_NAME#v}" '$0 ~ "^## \\["ver"\\]" {print; exit}' CHANGELOG.md)
             SUBJECT=$(printf "%s\n" "${CHANGELOG_LINE}" | awk -F'\"' '{print $2}')
