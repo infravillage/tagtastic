@@ -3,7 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).## [Unreleased]
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [Unreleased]
 
 ### Added
 - N/A
@@ -13,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - N/A
+
+## [0.1.1] – "Aquamarine" – 2026-01-04
+
+### Added
+- Placeholder version entry for this release.
 
 ## [0.1.0-beta.2] – "Apricot" – 2026-01-04
 
@@ -62,8 +68,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+[Unreleased]: https://github.com/infravillage/tagtastic/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/infravillage/tagtastic/compare/vUnreleased...v0.1.1
 [Unreleased]: https://github.com/infravillage/tagtastic/compare/v0.1.0-beta.2...HEAD
-[0.1.0-beta.2]: https://github.com/infravillage/tagtastic/compare/vUnreleased...v0.1.0-beta.2
-[Unreleased]: https://github.com/infravillage/tagtastic/compare/v0.1.0-beta.1...HEAD
+[0.1.0-beta.2]: https://github.com/infravillage/tagtastic/compare/v0.1.0-beta.1...v0.1.0-beta.2
 [0.1.0-beta.1]: https://github.com/infravillage/tagtastic/compare/v0.1.0-alpha.1...v0.1.0-beta.1
 [0.1.0-alpha.1]: https://github.com/infravillage/tagtastic/releases/tag/v0.1.0-alpha.1
