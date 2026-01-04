@@ -34,6 +34,9 @@ jobs:
           if [ -z "${TAG_NAME}" ]; then
             TAG_NAME="${GITHUB_REF_NAME}"
           fi
+          if [ -z "${TAG_NAME}" ] && [ -n "${GITHUB_REF}" ]; then
+            TAG_NAME="${GITHUB_REF##*/}"
+          fi
           case "${TAG_NAME}" in
             v*) ;;
             *)
