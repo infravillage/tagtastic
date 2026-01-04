@@ -264,7 +264,7 @@ func (cmd ConfigInitCmd) Run() error {
 		return err
 	}
 
-	fmt.Fprintf(cmd.deps.Out, "Initialized config at %s\n", path)
+	_, _ = fmt.Fprintf(cmd.deps.Out, "Initialized config at %s\n", path)
 	return nil
 }
 
@@ -320,7 +320,7 @@ func (cmd ConfigResetCmd) Run() error {
 	}
 
 	if cmd.DryRun {
-		fmt.Fprintf(cmd.deps.Out, "Dry run: would remove config at %s\n", path)
+		_, _ = fmt.Fprintf(cmd.deps.Out, "Dry run: would remove config at %s\n", path)
 		return nil
 	}
 
@@ -328,7 +328,7 @@ func (cmd ConfigResetCmd) Run() error {
 		return err
 	}
 
-	fmt.Fprintf(cmd.deps.Out, "Removed config at %s\n", path)
+	_, _ = fmt.Fprintf(cmd.deps.Out, "Removed config at %s\n", path)
 	return nil
 }
 

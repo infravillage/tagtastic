@@ -54,8 +54,8 @@ func main() {
 	args := os.Args[1:]
 	if len(args) == 0 {
 		if shouldShowBanner(args) {
-			fmt.Fprintln(os.Stdout, renderBanner())
-			fmt.Fprintln(os.Stdout)
+			_, _ = fmt.Fprintln(os.Stdout, renderBanner())
+			_, _ = fmt.Fprintln(os.Stdout)
 			ctx, err := parser.Parse([]string{"--help"})
 			parser.FatalIfErrorf(err)
 			parser.FatalIfErrorf(ctx.Run())
@@ -67,8 +67,8 @@ func main() {
 	}
 
 	if shouldShowBanner(args) && isHelpRequest(args) {
-		fmt.Fprintln(os.Stdout, renderBanner())
-		fmt.Fprintln(os.Stdout)
+		_, _ = fmt.Fprintln(os.Stdout, renderBanner())
+		_, _ = fmt.Fprintln(os.Stdout)
 	}
 
 	ctx, err := parser.Parse(args)
