@@ -56,6 +56,8 @@ func main() {
 	codename := fs.String("codename", "", "Optional codename override")
 	date := fs.String("date", "", "Release date (YYYY-MM-DD), defaults to today")
 	bump := fs.String("bump", "", "Auto-bump version (major, minor, patch)")
+	pre := fs.String("pre", "", "Prerelease label (alpha, beta, rc)")
+	preNum := fs.Int("pre-num", 0, "Prerelease number (defaults to next available)")
 	commit := fs.Bool("commit", false, "Commit CHANGELOG.md and VERSION updates")
 	quiet := fs.Bool("quiet", false, "Suppress non-essential output")
 	fs.BoolVar(quiet, "q", false, "Suppress non-essential output (shorthand)")
@@ -73,8 +75,8 @@ func main() {
 		fmt.Fprintln(os.Stdout, "Codename is auto-selected unless --codename is provided.")
 		fmt.Fprintln(os.Stdout)
 		fmt.Fprintln(os.Stdout, "Usage:")
-		fmt.Fprintln(os.Stdout, "  release <version> [--codename NAME] [--date YYYY-MM-DD] [--commit]")
-		fmt.Fprintln(os.Stdout, "  release --bump <major|minor|patch> [--codename NAME] [--date YYYY-MM-DD] [--commit]")
+		fmt.Fprintln(os.Stdout, "  release <version> [--pre <alpha|beta|rc>] [--pre-num N] [--codename NAME] [--date YYYY-MM-DD] [--commit]")
+		fmt.Fprintln(os.Stdout, "  release --bump <major|minor|patch> [--pre <alpha|beta|rc>] [--pre-num N] [--codename NAME] [--date YYYY-MM-DD] [--commit]")
 		fmt.Fprintln(os.Stdout)
 		fmt.Fprintln(os.Stdout, "Flags:")
 		fs.SetOutput(os.Stdout)
@@ -126,10 +128,24 @@ func main() {
 		if err != nil {
 			reportError(err, 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
 		}
-	} else {
-		if err := ensureSemVerForward(version, latestVersion); err != nil {
+	}
+
+	if strings.TrimSpace(*pre) == "" && *preNum > 0 {
+		reportError(errors.New("use --pre when providing --pre-num"), 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+	}
+
+	if strings.TrimSpace(*pre) != "" {
+		if _, err := parseSemVer(version); err != nil {
 			reportError(err, 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
 		}
+		version, err = resolvePreReleaseVersion(version, strings.TrimSpace(*pre), *preNum)
+		if err != nil {
+			reportError(err, 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
+		}
+	}
+
+	if err := ensureSemVerForward(version, latestVersion); err != nil {
+		reportError(err, 2, jsonEnabled, quietEnabled, func() { printUsage(!quietEnabled) })
 	}
 
 	resolvedDate := strings.TrimSpace(*date)
@@ -586,15 +602,14 @@ func latestTagVersion() (string, error) {
 	if _, err := os.Stat(".git"); err != nil {
 		return "", nil
 	}
-	cmd := exec.Command("git", "tag", "-l", "v*")
-	output, err := cmd.Output()
+	tags, err := listTags()
 	if err != nil {
 		return "", err
 	}
 
 	var latest semVer
 	found := false
-	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
+	for _, line := range tags {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}
@@ -612,6 +627,108 @@ func latestTagVersion() (string, error) {
 		return "", nil
 	}
 	return formatSemVer(latest), nil
+}
+
+func resolvePreReleaseVersion(baseVersion, label string, num int) (string, error) {
+	tags, err := listTags()
+	if err != nil {
+		return "", err
+	}
+	return resolvePreReleaseVersionWithTags(baseVersion, label, num, tags)
+}
+
+func resolvePreReleaseVersionWithTags(baseVersion, label string, num int, tags []string) (string, error) {
+	label = strings.ToLower(strings.TrimSpace(label))
+	if err := validatePreLabel(label); err != nil {
+		return "", err
+	}
+
+	base, err := parseSemVer(baseVersion)
+	if err != nil {
+		return "", err
+	}
+	if base.hasPre {
+		return "", errors.New("version already includes prerelease; omit --pre")
+	}
+
+	if num < 0 {
+		return "", errors.New("pre-release number must be positive")
+	}
+	if num == 0 {
+		next, err := nextPreNumFromTags(baseVersion, label, tags)
+		if err != nil {
+			return "", err
+		}
+		num = next
+	}
+	if num < 1 {
+		return "", errors.New("pre-release number must be at least 1")
+	}
+
+	version := fmt.Sprintf("%d.%d.%d-%s.%d", base.major, base.minor, base.patch, label, num)
+	return version, nil
+}
+
+func validatePreLabel(label string) error {
+	switch strings.ToLower(strings.TrimSpace(label)) {
+	case "alpha", "beta", "rc":
+		return nil
+	default:
+		return fmt.Errorf("invalid prerelease label: %s", label)
+	}
+}
+
+func nextPreNum(baseVersion, label string) (int, error) {
+	tags, err := listTags()
+	if err != nil {
+		return 0, err
+	}
+	return nextPreNumFromTags(baseVersion, label, tags)
+}
+
+func nextPreNumFromTags(baseVersion, label string, tags []string) (int, error) {
+	base, err := parseSemVer(baseVersion)
+	if err != nil {
+		return 0, err
+	}
+	if base.hasPre {
+		return 0, errors.New("base version must not include prerelease")
+	}
+
+	label = strings.ToLower(strings.TrimSpace(label))
+	max := 0
+	for _, tag := range tags {
+		parsed, err := parseSemVer(strings.TrimSpace(tag))
+		if err != nil || !parsed.hasPre {
+			continue
+		}
+		if parsed.major != base.major || parsed.minor != base.minor || parsed.patch != base.patch {
+			continue
+		}
+		if strings.ToLower(parsed.preLabel) != label {
+			continue
+		}
+		if parsed.preNum > max {
+			max = parsed.preNum
+		}
+	}
+	return max + 1, nil
+}
+
+func listTags() ([]string, error) {
+	if _, err := os.Stat(".git"); err != nil {
+		return []string{}, nil
+	}
+	cmd := exec.Command("git", "tag", "-l", "v*")
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	if len(lines) == 1 && strings.TrimSpace(lines[0]) == "" {
+		return []string{}, nil
+	}
+	return lines, nil
 }
 
 func createTag(version, codename string) error {
@@ -672,6 +789,8 @@ func reorderArgs(args []string) []string {
 		"--bump":     {},
 		"--codename": {},
 		"--date":     {},
+		"--pre":      {},
+		"--pre-num":  {},
 		"--config":   {},
 	}
 

@@ -13,7 +13,7 @@ help:
 	@echo "  make codename - Print the next available release codename"
 	@echo "  make sync-themes - Sync data/themes.yaml into internal/data/themes.yaml"
 	@echo "  make release-prep VERSION=x.y.z - Prepare CHANGELOG, VERSION, and tag"
-	@echo "  make release-bump BUMP=patch - Prepare next SemVer bump and tag"
+	@echo "  make release-bump BUMP=patch [PRE=beta] - Prepare next SemVer bump and tag"
 	@echo "  make quality - Run gofmt, go vet, and golangci-lint"
 
 build:
@@ -45,7 +45,7 @@ release-prep:
 	go run ./cmd/tools/release $(VERSION)
 
 release-bump:
-	go run ./cmd/tools/release --bump $(BUMP)
+	go run ./cmd/tools/release --bump $(BUMP) $(if $(PRE),--pre $(PRE),) $(if $(PRENUM),--pre-num $(PRENUM),)
 
 quality:
 	gofmt -w ./

@@ -64,3 +64,30 @@ func TestBumpVersion(t *testing.T) {
 		t.Fatalf("expected 0.1.1, got %q", version)
 	}
 }
+
+func TestResolvePreReleaseVersionAutoNum(t *testing.T) {
+	tags := []string{"v0.1.1-beta.1", "v0.1.1-beta.2", "v0.1.1-rc.1"}
+	version, err := resolvePreReleaseVersionWithTags("0.1.1", "beta", 0, tags)
+	if err != nil {
+		t.Fatalf("resolvePreReleaseVersionWithTags failed: %v", err)
+	}
+	if version != "0.1.1-beta.3" {
+		t.Fatalf("expected 0.1.1-beta.3, got %q", version)
+	}
+}
+
+func TestResolvePreReleaseVersionManualNum(t *testing.T) {
+	version, err := resolvePreReleaseVersionWithTags("0.1.1", "rc", 5, nil)
+	if err != nil {
+		t.Fatalf("resolvePreReleaseVersionWithTags failed: %v", err)
+	}
+	if version != "0.1.1-rc.5" {
+		t.Fatalf("expected 0.1.1-rc.5, got %q", version)
+	}
+}
+
+func TestResolvePreReleaseVersionInvalidLabel(t *testing.T) {
+	if _, err := resolvePreReleaseVersionWithTags("0.1.1", "preview", 0, nil); err == nil {
+		t.Fatalf("expected error for invalid prerelease label")
+	}
+}

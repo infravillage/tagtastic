@@ -182,6 +182,12 @@ go run ./cmd/tools/release --bump patch --commit
 git push origin v0.1.0-beta.3
 ```
 
+Release helper (pre-release):
+```bash
+go run ./cmd/tools/release 0.1.1 --pre beta --commit
+git push origin v0.1.1-beta.1
+```
+
 Record a codename for CI workflows without tagging:
 ```bash
 tagtastic generate --theme crayola_colors --record
@@ -225,6 +231,8 @@ CI/automation options:
 - `--json-errors` emits machine-readable error output.
 - `--config <path>` overrides the repo config location.
 - `--no-config-update` skips writing `.tagtastic.yaml`.
+- `--pre <alpha|beta|rc>` appends a prerelease label.
+- `--pre-num N` sets a prerelease number (defaults to next available).
 
 CI guidance:
 - Prefer the release helper in CI to keep SemVer monotonic and reproducible.
